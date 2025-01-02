@@ -221,7 +221,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         kg_graph_deep_copy.merge_kg_graph(kg_graph)
         self._table_kg_graph_with_desc(kg_graph_deep_copy)
         graph_docs = kg_graph_deep_copy.to_answer_path()
-        graph_docs = json.dumps(graph_docs, ensure_ascii=False)
+        graph_docs = json.dumps(graph_docs, ensure_ascii=False, indent=2)
         last_data = kg_graph_deep_copy.get_entity_by_alias(last_var)
         if last_data:
             graph_docs = [str(d) for d in last_data]
@@ -243,7 +243,10 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         cur_content, sub_graph = convert_lf_res_to_report_format(
             None, f"graph_{generate_random_string(3)}", 0, [], kg_graph_deep_copy
         )
-        context += cur_content
+        if cur_content:
+            context += cur_content
+        else:
+            context += [graph_docs]
         history_log = {"report_info": {"context": context, "sub_graph": [sub_graph] if sub_graph else None}}
 
         return self.can_answer(answer), answer, [history_log]
