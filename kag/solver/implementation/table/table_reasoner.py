@@ -42,9 +42,9 @@ class TableReasoner(KagReasonerABC):
         self.session_id = kwargs.get("session_id", 0)
         self.dk = self._query_dk()
 
-        self.logic_form_plan_prompt = PromptOp.load(self.biz_scene, "logic_form_plan_table")(
-            language=self.language
-        )
+        self.logic_form_plan_prompt = PromptOp.load(
+            self.biz_scene, "logic_form_plan_table"
+        )(language=self.language)
 
         self.resp_generator = PromptOp.load(self.biz_scene, "resp_with_dk_generator")(
             language=self.language
@@ -52,13 +52,17 @@ class TableReasoner(KagReasonerABC):
         self.llm_backup = PromptOp.load(self.biz_scene, "llm_backup")(
             language=self.language
         )
-        self.resp_think_generator = PromptOp.load(self.biz_scene, "resp_think_generator")(
-            language=self.language
-        )
+        self.resp_think_generator = PromptOp.load(
+            self.biz_scene, "resp_think_generator"
+        )(language=self.language)
 
         self.judge_prompt = PromptOp.load(self.biz_scene, "resp_judge")(
             language=self.language
         )
+
+        self.rewrite_subquestion = PromptOp.load(
+            self.biz_scene, "rewrite_sub_question"
+        )(language=self.language)
 
         self.report_tool: ReporterIntermediateProcessTool = kwargs.get(
             "report_tool", None
@@ -105,6 +109,9 @@ class TableReasoner(KagReasonerABC):
 
             for sub_question in sub_question_list:
                 sub_q_str = sub_question["sub_question"]
+                # new_sub_q_str = self._rewrite_sub_question(history=history, subquestion=sub_q_str)
+                # print(f"rewrite_sub_question, from={sub_q_str}, to={new_sub_q_str}")
+                # sub_q_str = new_sub_q_str
                 func_str = sub_question["process_function"]
 
                 node = SearchTreeNode(sub_q_str, func_str)
@@ -121,7 +128,9 @@ class TableReasoner(KagReasonerABC):
                 # answer subquestion
                 sub_answer = None
                 if "Retrieval" == func_str:
-                    can_answer, sub_answer = self._call_retravel_func(question, node, history)
+                    can_answer, sub_answer = self._call_retravel_func(
+                        question, node, history
+                    )
                 elif "PythonCoder" == func_str:
                     can_answer, sub_answer = self._call_python_coder_func(
                         init_question=question, node=node, history=history
@@ -151,22 +160,37 @@ class TableReasoner(KagReasonerABC):
                 break
         final_answer = "I don't know"
         # 判定答案
-        can_answer = self.llm_module.invoke({'memory': str(history), 'instruction': history.root_node.question, "dk": history.dk}, self.judge_prompt,
-                                      with_json_parse=True)
+        can_answer = self.llm_module.invoke(
+            {
+                "memory": str(history),
+                "instruction": history.root_node.question,
+                "dk": history.dk,
+            },
+            self.judge_prompt,
+            with_json_parse=True,
+        )
         llm: LLMClient = self.llm_module
         if can_answer:
             final_answer_form_llm = False
             # 总结答案
             final_answer = llm.invoke(
-                {"memory": str(history), "question": history.root_node.question, "dk": history.dk},
+                {
+                    "memory": str(history),
+                    "question": history.root_node.question,
+                    "dk": history.dk,
+                },
                 self.resp_generator,
                 with_except=True,
             )
         else:
             # 无法直接给出答案，则给出用户关心的信息
-            final_answer_form_llm = True
+            final_answer_form_llm = False
             final_answer = llm.invoke(
-                {"memory": str(history), "question": history.root_node.question, "dk": history.dk},
+                {
+                    "memory": str(history),
+                    "question": history.root_node.question,
+                    "dk": history.dk,
+                },
                 self.resp_think_generator,
                 with_except=True,
             )
@@ -192,6 +216,7 @@ class TableReasoner(KagReasonerABC):
         )
         history.set_now_plan(sub_question_list)
         return sub_question_list
+
     def _call_spo_retravel_func(self, query):
         lf_planner = SPOLFPlanner(
             KAG_PROJECT_ID=self.project_id, KAG_PROJECT_HOST_ADDR=self.host_addr
@@ -230,7 +255,7 @@ class TableReasoner(KagReasonerABC):
             answer = history_log["history"][-1].get("sub_answer", "I don't know")
         else:
             answer = "I don't know"
-        return  "i don't know" not in answer.lower(), answer, [history_log]
+        return "i don't know" not in answer.lower(), answer, [history_log]
 
     def _call_retravel_func(
         self, init_question, node: SearchTreeNode, history: SearchTree
@@ -245,53 +270,55 @@ class TableReasoner(KagReasonerABC):
         with ThreadPoolExecutor(max_workers=2) as executor:
             # 两路召回同时做符号求解
             futures = [
-                executor.submit(table_retrical_agent.symbol_solver),
-                executor.submit(self._call_spo_retravel_func, node.question),
+                executor.submit(table_retrical_agent.symbol_solver, history=history),
+                # executor.submit(self._call_spo_retravel_func, node.question),
             ]
 
             # 等待任务完成并获取结果
             for i, future in enumerate(futures):
                 if 0 == i:
                     is_answer, res, trace_log = future.result()
-                    answer_history.append({
-                        "res": res,
-                        "trace_log": trace_log
-                    })
+                    answer_history.append({"res": res, "trace_log": trace_log})
                     if is_answer:
                         self.update_node(node, res, trace_log)
                         return True, res
                 elif 1 == i:
                     is_answer, res, trace_log = future.result()
-                    answer_history.append({
-                        "res": res,
-                        "trace_log": trace_log
-                    })
+                    answer_history.append({"res": res, "trace_log": trace_log})
                     if is_answer:
                         self.update_node(node, res, trace_log)
                         return True, res
             # 同时进行chunk求解
             futures = [
-                executor.submit(table_retrical_agent.answer),
-                # executor.submit(self._call_chunk_retravel_func, node.question),
+                executor.submit(table_retrical_agent.answer, history=history),
+                executor.submit(self._call_spo_retravel_func, self._get_subquestion_pre(history) + node.question),
             ]
             for i, future in enumerate(futures):
                 if 0 == i:
                     try:
                         is_answer, res, trace_log = future.result()
-                        answer_history.append({
-                            "res": res,
-                            "trace_log": trace_log
-                        })
+                        answer_history.append({"res": res, "trace_log": trace_log})
                         if is_answer:
                             self.update_node(node, res, trace_log)
                             return True, res
                     except Exception as e:
                         logger.warning(f"table chunk failed {e}", exc_info=True)
-        answer = "\n".join(list(set([h['res'] for h in answer_history])))
-        trace_log = self._merge_trace_log([h['trace_log'] for h in answer_history])
+                elif 1 == i:
+                    is_answer, res, trace_log = future.result()
+                    answer_history.append({"res": res, "trace_log": trace_log})
+                    if is_answer:
+                        self.update_node(node, res, trace_log)
+                        return True, res
+        answer = "\n".join(list(set([h["res"] for h in answer_history])))
+        trace_log = self._merge_trace_log([h["trace_log"] for h in answer_history])
         self.update_node(node, answer, trace_log)
         node.answer = answer
         return False, node.answer
+    
+    def _get_subquestion_pre(self, history:SearchTree):
+        rst = history._get_all_qa_str()
+        return rst
+
     def _merge_trace_log(self, trace_logs):
         context = []
         sub_graphs = []
@@ -321,7 +348,9 @@ class TableReasoner(KagReasonerABC):
         sub_answer, code = agent.answer()
         node.answer = sub_answer
         node.answer_desc = self._process_coder_desc(code)
-        return (sub_answer is not None and  "i don't know" not in sub_answer.lower()), sub_answer
+        return (
+            sub_answer is not None and "i don't know" not in sub_answer.lower()
+        ), sub_answer
 
     def _process_coder_desc(self, coder_desc: str):
         # 拆分文本为行

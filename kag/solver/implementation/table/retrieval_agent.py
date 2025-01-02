@@ -140,7 +140,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
             with_except=True,
         )
 
-    def symbol_solver(self):
+    def symbol_solver(self, history:SearchTree):
         """
         符号求解
         """
@@ -170,7 +170,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
                     "score": node["score"]
                 }
 
-        table_name_list = list(s_table_info.values())
+        table_name_list = list(s_table_info.keys())
         # table_name_list = [
         #     f"表名：{t['node']['name']}\n{t['node']['content']}" for t in s_nodes
         # ]
@@ -228,7 +228,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
 
         # 回答子问题
         answer_analysis = llm.invoke(
-            {"docs": graph_docs, "question": self.question, "dk": self.dk},
+            {"docs": graph_docs, "question": self.question, "dk": self.dk, "history": str(history)},
             self.sub_question_answer,
             with_except=True,
             with_json_parse=True
@@ -242,7 +242,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
             f"```java\n{sub_logic_nodes_str}\n```",
         ]
         cur_content, sub_graph = convert_lf_res_to_report_format(
-            None, f"graph_{generate_random_string(3)}", 0, [], kg_graph
+            None, f"graph_{generate_random_string(3)}", 0, [], kg_graph_deep_copy
         )
         context += cur_content
         history_log = {"report_info": {"context": context, "sub_graph": [sub_graph] if sub_graph else None}}
@@ -252,6 +252,9 @@ class TableRetrievalAgent(ChunkRetrieverABC):
     def _table_kg_graph_with_desc(self, kg_graph: KgGraph):
         table_cell_type = self.chunk_retriever.schema_util.get_label_within_prefix(
             "TableCell"
+        )
+        table_row_type = self.chunk_retriever.schema_util.get_label_within_prefix(
+            "TableRow"
         )
         for _, edge_list in kg_graph.edge_map.items():
             for edge in edge_list:
@@ -471,7 +474,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         type_str = ":`" + type_str + "`"
         return type_str
 
-    def answer(self):
+    def answer(self, history: SearchTree):
         row_docs = self.recall_docs(query=self.question)
         print(f"rowdocs,query={self.question}\n{row_docs}")
         if len(row_docs) <= 0:
@@ -483,7 +486,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         docs = "\n\n".join(rerank_docs)
         llm: LLMClient = self.llm_module
         answer_analysis = llm.invoke(
-            {"docs": docs, "question": self.question, "dk": self.dk},
+            {"docs": docs, "question": self.question, "dk": self.dk, "history": str(history)},
             self.sub_question_answer,
             with_except=True,
         )
@@ -494,7 +497,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
             docs = "\n\n".join(row_docs)
             llm: LLMClient = self.llm_module
             answer_analysis = llm.invoke(
-                {"docs": docs, "question": self.question, "dk": self.dk},
+                {"docs": docs, "question": self.question, "dk": self.dk, "history": str(history)},
                 self.sub_question_answer,
                 with_except=True,
             )

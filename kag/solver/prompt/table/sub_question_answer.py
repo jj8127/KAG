@@ -55,6 +55,7 @@ class RespGenerator(PromptOp):
     },
     "任务": {
         "问题": "$question",
+        "上下文信息": "$history",
         "领域知识": "$dk"
         "信息": $docs,
         "输出":
@@ -68,7 +69,7 @@ class RespGenerator(PromptOp):
 
     @property
     def template_variables(self) -> List[str]:
-        return ["docs", "question", "dk"]
+        return ["docs", "question", "dk", "history"]
 
     def parse_response(self, response, **kwargs):
         logger.debug("推理器判别:{}".format(response))
