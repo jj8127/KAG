@@ -135,7 +135,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         docs = "\n\n".join(passages)
         llm: LLMClient = self.llm_module
         return llm.invoke(
-            {"docs": docs, "question": self.question},
+            {"docs": docs, "question": self.question, "dk": self.dk},
             self.select_docs,
             with_except=True,
         )
@@ -178,7 +178,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         # 生成get_spo符号
         llm: LLMClient = self.llm_module
         get_spo_list = llm.invoke(
-            {"input": self.question, "table_names": "\n".join([str(d) for d in table_name_list])},
+            {"input": self.question, "table_names": "\n".join([str(d) for d in table_name_list]), "dk": self.df},
             self.gen_symbol,
             with_json_parse=False,
             with_except=True,
@@ -481,7 +481,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         docs = "\n\n".join(rerank_docs)
         llm: LLMClient = self.llm_module
         answer_analysis = llm.invoke(
-            {"docs": docs, "question": self.question},
+            {"docs": docs, "question": self.question, "dk": self.dk},
             self.sub_question_answer,
             with_except=True,
         )
@@ -492,7 +492,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
             docs = "\n\n".join(row_docs)
             llm: LLMClient = self.llm_module
             answer_analysis = llm.invoke(
-                {"docs": docs, "question": self.question},
+                {"docs": docs, "question": self.question, "dk": self.dk},
                 self.sub_question_answer,
                 with_except=True,
             )
