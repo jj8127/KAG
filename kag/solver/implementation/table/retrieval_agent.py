@@ -178,11 +178,13 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         # 生成get_spo符号
         llm: LLMClient = self.llm_module
         get_spo_list = llm.invoke(
-            {"input": self.question, "table_names": "\n".join([str(d) for d in table_name_list]), "dk": self.df},
+            {"input": self.question, "table_names": "\n".join([str(d) for d in table_name_list]), "dk": self.dk},
             self.gen_symbol,
             with_json_parse=False,
             with_except=True,
         )
+
+        print("table_symbol_retrival,get_spo_list=" + json.dumps(get_spo_list, ensure_ascii=False))
 
         # 在图上查询
         last_var = None

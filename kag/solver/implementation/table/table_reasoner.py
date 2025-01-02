@@ -133,6 +133,7 @@ class TableReasoner(KagReasonerABC):
                 self.report_pipleline(history)
 
                 print("subquestion=" + str(sub_q_str) + ",answer=" + str(sub_answer))
+                print("history=" + str(history))
                 # reflection
                 if not can_answer:
                     # 重新进行规划
