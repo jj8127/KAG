@@ -227,11 +227,10 @@ class TableRetrievalAgent(ChunkRetrieverABC):
             graph_docs = [str(d) for d in last_data]
 
         # 回答子问题
-        answer_analysis = llm.invoke(
+        answer = llm.invoke(
             {"docs": graph_docs, "question": self.question, "dk": self.dk, "history": str(history)},
             self.sub_question_answer,
             with_except=True,
-            with_json_parse=True
         )
 
         # 转换graph为可以页面可展示的格式
@@ -247,8 +246,12 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         context += cur_content
         history_log = {"report_info": {"context": context, "sub_graph": [sub_graph] if sub_graph else None}}
 
-        return answer_analysis.get("can_answer", 'no').lower() == "yes", answer_analysis.get('analysis', ""), [history_log]
+        return self.can_answer(answer), answer, [history_log]
 
+    def can_answer(self, answer):
+        if not answer:
+            return False
+        return "i don't know" not in answer.lower()
     def _table_kg_graph_with_desc(self, kg_graph: KgGraph):
         table_cell_type = self.chunk_retriever.schema_util.get_label_within_prefix(
             "TableCell"
@@ -485,25 +488,25 @@ class TableRetrievalAgent(ChunkRetrieverABC):
             return False, rerank_docs, None
         docs = "\n\n".join(rerank_docs)
         llm: LLMClient = self.llm_module
-        answer_analysis = llm.invoke(
+        answer = llm.invoke(
             {"docs": docs, "question": self.question, "dk": self.dk, "history": str(history)},
             self.sub_question_answer,
             with_except=True,
         )
-        can_answer = answer_analysis.get("can_answer", 'no')
-        answer_res = answer_analysis.get('analysis', "")
+        can_answer = self.can_answer(answer)
+        answer_res = answer
         if "no" in can_answer.lower():
             # 尝试使用原始召回数据再回答一次
             docs = "\n\n".join(row_docs)
             llm: LLMClient = self.llm_module
-            answer_analysis = llm.invoke(
+            answer = llm.invoke(
                 {"docs": docs, "question": self.question, "dk": self.dk, "history": str(history)},
                 self.sub_question_answer,
                 with_except=True,
             )
-            can_answer = answer_analysis.get("can_answer", 'no')
-            answer_res = answer_analysis.get('analysis', "")
-        return can_answer.lower() == "yes", answer_res, [{"report_info": {"context": docs, "sub_graph": None}}]
+            can_answer = self.can_answer(answer)
+            answer_res = answer
+        return can_answer, answer_res, [{"report_info": {"context": docs, "sub_graph": None}}]
 
     def get_sub_item_reall(self, entities):
         index = self.question.find("的所有子项")
