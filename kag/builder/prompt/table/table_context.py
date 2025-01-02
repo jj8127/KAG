@@ -53,7 +53,36 @@ class TableContextKeyWordsExtractPrompt(PromptOp):
 }
 """
 
-    template_en = template_zh
+    template_en = """
+{
+  "task": "Extract keywords related to the table",
+  "instruction": [
+    "Carefully read the entire provided text, including the context before and after the table.",
+    "Locate relevant paragraphs: Identify all sentences or paragraphs that directly discuss, explain, or reference the table.",
+    "Select words and phrases that best describe the content, structure, or significance of the table as keywords. Avoid using words already present in the table headers and index column.",
+    "Table Naming: Give the table an easily understandable name."
+  ],
+  "output_format": "Output in JSON format, including table_desc, keywords, table_name",
+  "examples": [
+    {
+      "input": "中芯国际财报2024_3.pdf#7\n2024 年第三季度报告\n本公司董事会及全体董事保证本公告内容不存在任何虚假记载、误导性陈述或者重大遗漏，并对其内容的真实性、准确性和完整性依法承担法律责任。\n2024 年第三季度报告-二、主要财务数据\n2024 年第三季度报告-二、主要财务数据-(一)主要会计数据和财务指标\n单位：千元  币种：人民币\n\n** Target Table **\n### Other Table ###\n### Other Table ###\n附注：\n(1) \"本报告期\"指本季度初至本季度末 3 个月期间，下同。\n(2) 根据 2023 年 12 月 22 日最新公布的《公开发行证券的公司信息披露解释性公告第 1 号—非经常性损益（2023 年修订）》，本公司重述上年同期归属于上市公司股东的扣除非经常性损益的净利润。",
+      "output": {
+        "table_desc": [
+          "2024 年第三季度报告-二、主要财务数据-(一)主要会计数据和财务指标 单位：千元  币种：人民币"
+        ],
+        "keywords": [
+          "SMIC",
+          "2024 Q3 report",
+          "key financial data",
+          "key accounting data and indicators"
+        ],
+        "table_name": "SMIC 2024 Q3 Key Financial Data"
+      }
+    }
+  ],
+  "intput": "$input"
+}
+"""
 
     def __init__(self, language: Optional[str] = "en", **kwargs):
         super().__init__(language, **kwargs)

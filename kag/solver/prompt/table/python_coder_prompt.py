@@ -52,8 +52,8 @@ interest = principal * (annual_rate / 365) * days
 # 输出总金额（本金+利息）
 total_amount = principal + interest
 
-print(f"利息：{interest:.2f}元")
-print(f"总金额：{total_amount:.2f}元")
+print(f"利息：{interest:.2f}")
+print(f"总金额：{total_amount:.2f}")
 ```
 
 ## 例子2
@@ -89,7 +89,89 @@ $error
 
 # output
 """
-    template_en = template_zh
+    template_en = """
+# instruction
+Based on the given question and data, write Python code to solve the problem and output the results. 
+To facilitate understanding, print intermediate results in the Python code. 
+If you cannot solve the problem or cannot find the answer, print "I don't know" in Python and provide the reason.
+
+# output format
+Only output Python code, do not output anything else. 
+The Python code version is 3.8 and includes the SymPy symbolic computation library.
+
+# pay attention
+The context contains answers to upstream sub-questions, which you must include when answering the question. 
+The context is only for reference; do not answer other questions in the context. 
+You only need to focus on answering the question at hand.
+
+# domain_knowledge
+$dk
+
+# examples
+## Example1
+### input
+#### question
+Calculate the interest for 47,000 yuan at a rate of 0.015% for a total of 612 days, and determine the total amount.  
+### output
+```python
+# Initial principal
+principal = 47000
+
+# Interest rate (0.015%)
+rate = 1.5 / 10000
+
+# Number of days
+days = 612
+
+# Calculate annual interest rate
+annual_rate = rate * 365
+
+# Calculate interest
+interest = principal * (annual_rate / 365) * days
+
+# Output total amount (principal + interest)
+total_amount = principal + interest
+
+print(f"Interest：{interest:.2f}")
+print(f"Total amount：{total_amount:.2f}")
+```
+
+## Example2
+### input
+#### question
+What is the average transaction amount?
+#### context
+The total transaction amount is 542 (in billion USD), and the number of transactions is 2.1 (in billion USD).
+### output
+```python
+# Given data
+total_transaction_amount = 542  # in billion USD
+number_of_transactions = 2.1  # in billion USD
+
+# Calculate the average transaction amount
+average_transaction_amount = total_transaction_amount / number_of_transactions
+
+# Print intermediate results
+print("Total Transaction Amount (in billion USD):", total_transaction_amount)
+print("Number of Transactions (in billion USD):", number_of_transactions)
+
+# Output the average transaction amount
+# When dividing billion USD by billion transactions, the "billion" units should cancel out, leaving the result in USD.
+print(f"Average Transaction Amount:{average_transaction_amount} USD")
+```
+
+# input
+## question
+$question
+
+## context
+$context
+
+## error
+$error
+
+# output
+"""
 
     def __init__(self, language: str):
         super().__init__(language)

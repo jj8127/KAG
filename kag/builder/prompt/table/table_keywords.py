@@ -91,6 +91,7 @@ class TableContextKeyWordsExtractPrompt(PromptOp):
     "Input multiple lines of text, with each line processed independently.",
     "First, extract the keywords, then provide multiple colloquial expressions for each keyword."
   ],
+  "output_format": "JSON",
   "examples": [
     {
       "input": {

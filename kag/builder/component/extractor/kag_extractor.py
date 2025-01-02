@@ -47,10 +47,10 @@ class KAGExtractor(ExtractorABC):
 
         # print(f"input = {input}, id = {id(input)}")
         if input.type == ChunkTypeEnum.Text:
-            print("Run extract on Text chunk")
+            #print("Run extract on Text chunk")
             output = self._text_extractor.invoke(input, **kwargs)
         elif input.type == ChunkTypeEnum.Table:
-            print("Run extract on Table chunk")
+            #print("Run extract on Table chunk")
             chunk = self._table_classify.invoke(input, **kwargs)[0]
             output = self._table_extractor.invoke(chunk, **kwargs)[0]
         else:

@@ -30,7 +30,27 @@ $docs
 
 # your answer
 """
-    template_en = template_zh
+    template_en = """
+# Instruction
+Based on the question and the recall data, select the most relevant original text to return.
+If the original text is a table, return the table.
+Return the original text faithfully without altering any word.
+If all the data is irrelevant to the question, return: I don't know. And provide a detailed explanation.
+
+# Output format
+Format in markdown.
+
+# Pay Attention
+Return the original text faithfully without altering any word.
+
+# question
+$question
+
+# recall docs
+$docs
+
+# your answer
+"""
 
     def __init__(self, language: str):
         super().__init__(language)

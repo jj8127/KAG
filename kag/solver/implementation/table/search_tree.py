@@ -89,6 +89,22 @@ class SearchTree:
     def __str__(self):
         return self.as_subquestion_context_json()
 
+    def _get_all_qa_str(self):
+        def build_str_context(node: SearchTreeNode, rst_str:str):
+            children = list(self.dag.successors(node))
+            if not children:
+                if node.answer is not None:
+                    rst_str += f"\nquestion:{node.question},answer:{node.answer}"
+                return
+            children = sorted(children, key=lambda x: x.time_stamp)
+            filtered_results = []
+            for child in children:
+                build_str_context(child, rst_str)
+                rst_str += f"\nquestion:{node.question},answer:{node.answer}"
+        rst_str = ""
+        build_str_context(self.root_node, rst_str)
+        return rst_str
+
     def as_subquestion_context_json(self):
         """
         作为根节点的上下文

@@ -30,7 +30,27 @@ $question
 
 # your answer
 """
-    template_en = template_zh
+    template_en = """
+# task
+Answer the question based on the given information.
+If it's a simple question, state the answer directly.
+If it's a complex question, provide a concise problem-solving process and intermediate results, and summarize the answer in a formal tone.
+If you are unable to answer the question, respond with: I don't know
+
+# output format
+Plain text, do not include markdown formatting.
+
+# context
+$memory
+
+# domain_knowledge
+$dk
+
+# question
+$question
+
+# your answer
+"""
 
     def __init__(self, language: str):
         super().__init__(language)

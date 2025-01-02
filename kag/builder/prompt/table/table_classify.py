@@ -41,7 +41,7 @@ class TableClassifyPrompt(PromptOp):
           "output": {
             "table_type": "指标型表格",
             "header": [
-              0,
+              0
             ],
             "index_col": [
               0
@@ -106,7 +106,90 @@ class TableClassifyPrompt(PromptOp):
 }
 """
 
-    template_en = template_zh
+    template_en = """
+{
+  "task": "Table Classification and Information Extraction",
+  "description": "The task aims to categorize the given table into three categories: Metric_Based_Table, Simple_Table, and Other_Table. For each type of table, specific information needs to be extracted and output.",
+  "categories": [
+    {
+      "name": "Metric_Based_Table",
+      "definition": "Tables with numbers as core content, such as financial statements.",
+      "required_output": {
+        "header": "Row indices occupied by the header (starting from 0)",
+        "index_col": "Column indices where the key identifier is located (starting from 0)",
+        "units": "Measurement units, e.g., USD or RMB",
+        "scale": "Numerical scale, e.g., thousand, million"
+      },
+      "examples": [
+        {
+          "input": "The breakdown of our adjusted EBITA by segment for the periods indicated is as follows:\n\n|  | Six months ended September 30, 2023 - RMB (in millions, except percentages) | Six months ended September 30, 2024 - RMB (in millions, except percentages) | Six months ended September 30, 2024 - USD (in millions, except percentages) | % Year-on-Year Change |\n| --- | --- | --- | --- | --- |\n| Taotian Group | 96,396 | 93,400 | 13,309 | (3)% |\n",
+          "output": {
+            "table_type": "Metric_Based_Table",
+            "header": [
+              0
+            ],
+            "index_col": [
+              0
+            ],
+            "units": ["RMB", "USD"],
+            "scale": "Million"
+          }
+        },
+        {
+          "input": "Domestic Business Travel Accommodation Quota and Attendance Subsidy Quota Standard Table\n| Company | Personnel Classification | Item | Standard for Various Regions | Standard for Various Regions | Standard for Various Regions |\n|----------|------------------------------|--------------|--------------|--------------|--------------|\n| Company | Personnel Classification | Item | Category One | Category Two | Category Three |\n| Group Company | Company Executives | Accommodation Quota | 1500 | 1300 | 900 |\n| Group Company | Company Executives | Attendance Subsidy Quota | 50 | 25 | 0 |\n| Group Company | Platform Department Manager | Accommodation Quota | 600 | 500 | 400 |\n| Group Company | Platform Department Manager | Attendance Subsidy Quota | 200 | 100 | 50 |\n| Group Company | Platform Senior Manager, Senior Expert | Accommodation Quota | 450 | 350 | 300 |\n| Group Company | Platform Senior Manager, Senior Expert | Attendance Subsidy Quota | 100 | 100 | 80 |\n| Group Company | Other Staff | Accommodation Quota | 400 | 300 | 250 |\n| Group Company | Other Staff | Attendance Subsidy Quota | 180 | 180 | 150 |",
+          "output": {
+            "table_type": "Metric_Based_Table",
+            "header_rows": [
+              0,
+              1
+            ],
+            "index_col": [
+              0,
+              1,
+              2
+            ],
+            "units": "RMB",
+            "scale": "None"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Simple_Table",
+      "definition": "Tables that are not centered around numbers. The understanding of these tables is not affected even if they are split by length.",
+      "required_output": {
+        "header": "Row indices occupied by the header (starting from 0)",
+        "index_col": "Column indices where the key identifier is located (starting from 0)"
+      },
+      "examples": [
+        {
+          "input": "Student Information Registration Form\n| Name | Gender | Age | Education |\n| ---- | ---- | ---- | ---- |\n| Zhang San | Male | 22 | Bachelor |\n| Li Si | Male | 23 | Bachelor |\n| Wang Mei | Female | 24 | Master |",
+          "output": {
+            "table_type": "Simple_Table",
+            "header": [
+              0
+            ],
+            "index_col": [
+              0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Other_Table",
+      "definition": "Tables that do not belong to the above two categories.",
+      "required_output": {}
+    }
+  ],
+  "instructions": [
+    "First, determine which category the table belongs to.",
+    "Based on the table type, refer to the definition in the 'categories' field to collect the necessary output information.",
+    "Ensure that all provided information is accurate."
+  ],
+  "input": "$input"
+}
+"""
 
     def __init__(self, language: Optional[str] = "en", **kwargs):
         super().__init__(language, **kwargs)

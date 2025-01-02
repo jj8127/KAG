@@ -19,7 +19,22 @@ $docs
 答案：
 """
 
-    template_en = template_zh
+    template_en = """
+Based on the retrieved relevant documents, please answer the question "$question" and conduct a comprehensive analysis in conjunction with historical information.
+
+Requirements:
+Answer the question as concisely as possible.
+If the answer is a numerical value, describe the constraints such as time, measurement units, and dimensions as clearly as possible.
+If there is no suitable answer, please respond with "I don't know." 
+
+History: 
+$history
+
+docs:
+$docs
+
+Answer:
+"""
 
     def __init__(self, language: str):
         super().__init__(language)

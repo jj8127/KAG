@@ -150,8 +150,9 @@ class TableReasoner(KagReasonerABC):
                 break
         final_answer = "I don't know"
         # 判定答案
-        can_answer = self.llm_module.invoke({'memory': str(history), 'instruction': history.root_node.question, "dk": history.dk}, self.judge_prompt,
-                                      with_json_parse=True)
+        # can_answer = self.llm_module.invoke({'memory': str(history), 'instruction': history.root_node.question, "dk": history.dk}, self.judge_prompt,
+        #                               with_json_parse=True)
+        can_answer = True
         llm: LLMClient = self.llm_module
         if can_answer:
             final_answer_form_llm = False

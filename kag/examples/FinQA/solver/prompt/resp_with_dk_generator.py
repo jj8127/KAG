@@ -8,18 +8,20 @@ from kag.common.base.prompt_op import PromptOp
 logger = logging.getLogger(__name__)
 
 
-class RethinkRespGenerator(PromptOp):
+class RespGenerator(PromptOp):
     template_zh = """
 # task
-给定的信息不能够回答问题，你的任务是基于背景知识和用户给定的问题，思考背后需要获取的信息，并基于已有信息经可能给出一些相关的回答
-# 背景知识
-$dk
+基于给定的信息回答问题。
+只输出答案，不输出其他任何信息。
 
 # output format
-纯文本，不要包含markdown格式。
+纯文本，不使用markdown。
 
 # context
 $memory
+
+# domain_knowledge
+$dk
 
 # question
 $question
@@ -28,16 +30,17 @@ $question
 """
     template_en = """
 # task
-When the given information is insufficient to answer the question, your task is to think about the information needed based on the background knowledge and the user's question, and provide some relevant answers based on the available information as much as possible.
-
-# Domain Knowledge
-$dk
+Answer the question based on the given information.
+Output only the answer, and do not include any other information.
 
 # output format
-Plain text, do not include markdown formatting.
+Plain text, without using markdown.
 
 # context
 $memory
+
+# domain_knowledge
+$dk
 
 # question
 $question

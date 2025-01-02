@@ -53,7 +53,38 @@ class QuestionNER(PromptOp):
 }
 """
 
-    template_zh = template_en
+    template_zh = """
+{
+  "instruction": [
+    "Identify the keywords in the sub-problems and provide common aliases for the keywords."
+  ],
+  "example": [
+    {
+      "input": "Find revenue for different segments of Alibaba",
+      "output": [
+        {
+          "entity": "Alibaba",
+          "category": "Keyword",
+          "alias": [
+            "Alibaba Group",
+            "Ali Group",
+            "Ali"
+          ]
+        },
+        {
+          "entity": "revenue",
+          "category": "Keyword",
+          "alias": [
+            "sales revenue",
+            "earnings"
+          ]
+        }
+      ]
+    }
+  ],
+  "input": "$input"
+}
+"""
 
     def __init__(self, language: Optional[str] = "en", **kwargs):
         super().__init__(language, **kwargs)

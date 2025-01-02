@@ -248,7 +248,244 @@ $table_names
 
 # your output
 """
-    template_en = template_zh
+    template_en = """
+# Task
+Based on the given question and the schema information, generate a graph data query process.
+
+# Instruction
+To query the data, first identify the Table(s) where the data is located. You can query data from multiple Tables at once.
+Start from the Table, find the TableRow or TableColumn where the data is located, and finally locate the TableCell value.
+If multiple query paths are possible, output all of them.
+If you need to query the hierarchical relationships between TableRows, use the subitem relationship.
+If unable to answer, return: I don't know.
+
+# Output format
+Output in JSON format, which is a list of path queries where each path contains a description (desc) and the required query triples (spo).
+Each spo must include var (variable name), type (entity or relationship type), and link (target entity or relationship name, for chaining on graph data).
+
+# Schema and data example
+```json
+{
+  "entities": [
+    {
+      "name": "Table",
+      "properties": ["name", "desc"],
+      "relationships": [
+        {"p": "containRow"   , "s": "Table", "o": "TableRow"   },
+        {"p": "containColumn", "s": "Table", "o": "TableColumn"}
+      ]
+    },
+    {
+      "name": "TableRow",
+      "properties": ["name", "desc"],
+      "relationships": [
+        {"p": "containCell", "s": "TableRow", "o": "TableCell"},
+        {"p": "partOf"     , "s": "TableRow", "o": "Table"    },
+        {"p": "subitem"    , "s": "TableRow", "o": "TableRow" }
+      ]
+    },
+    {
+      "name": "TableColumn",
+      "properties": ["name", "desc"],
+      "relationships": [
+        {"p": "containCell", "s": "TableColumn", "o": "TableCell"},
+        {"p": "partOf"     , "s": "TableColumn", "o": "Table"    }
+      ]
+    },
+    {
+      "name": "TableCell",
+      "properties": ["name", "value", "scale", "unit"],
+      "relationships": [
+        {"p": "partOfTableRow"   , "s": "TableCell", "o": "TableRow"   },
+        {"p": "partOfTableColumn", "s": "TableCell", "o": "TableColumn"},
+        {"p": "partOfTable"      , "s": "TableCell", "o": "Table"      }
+      ]
+    },
+    {
+      "name": "TableKeyword",
+      "properties": [ {"name": "name", "type": "string"} ],
+      "relationships": [
+        {"p": "keyword", "s": "TableKeyword", "o": "Table"      },
+        {"p": "keyword", "s": "TableKeyword", "o": "TableColumn"}
+      ]
+    }
+  ],
+  "data_examples": [
+    {
+      "s": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table", "type": "Table"},
+      "p": "containRow",
+      "o": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table - Taotian Group", "type": "TableRow"}
+    },
+    {
+      "s": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table", "type": "Table"},
+      "p": "containRow",
+      "o": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table - China Retail Business", "type": "TableRow"}
+    },
+    {
+      "s": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table - Taotian Group", "type": "TableRow"},
+      "p": "subitem",
+      "o": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table - China Retail Business", "type": "TableRow"}
+    },
+    {
+      "s": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table", "type": "Table"},
+      "p": "containColumn",
+      "o": {
+        "id"  : "Alibaba FY2025 H1 Financial Report - Revenue Details Table - 6 Months Ending September 30, 2024 - RMB",
+        "type": "TableColumn"
+      }
+    },
+    {
+      "s": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table - Taotian Group", "type": "TableRow"},
+      "p": "containCell",
+      "o": {
+        "id"   : "Alibaba FY2025 H1 Financial Report - Revenue Details Table - Taotian Group - 6 Months Ending September 30, 2023 - RMB",
+        "type" : "TableCell"                                        ,
+        "value": "212,607"                                          ,
+        "scale": "Million"                                               ,
+        "unit" : "RMB"
+      }
+    },
+    {
+      "s": {
+        "id"   : "Alibaba FY2025 H1 Financial Report - Revenue Details Table - Taotian Group - 6 Months Ending September 30, 2023 - RMB",
+        "type" : "TableCell"                                        ,
+        "value": "212,607"                                          ,
+        "scale": "Million"                                               ,
+        "unit" : "RMB"
+      },
+      "p": "partOfTableRow",
+      "o": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table - China Retail Business", "type": "TableRow"}
+    },
+    {
+      "s": {"id": "Alibaba", "type": "TableKeyword"},
+      "p": "keyword",
+      "o": {"id": "Alibaba FY2025 H1 Financial Report - Revenue Details Table", "type": "Table"}
+    },
+    {
+      "s": {"id": "RMB", "type": "TableKeyword"},
+      "p": "keyword",
+      "o": {
+        "id"  : "Alibaba FY2025 H1 Financial Report - Revenue Details Table - 6 Months Ending September 30, 2023 - RMB",
+        "type": "TableColumn"
+      }
+    }
+  ]
+}
+```
+
+# Examples
+## Query specific values
+### input
+What was Alibaba's income for the 6 months ending September 30, 2024?
+### output
+```json
+[
+  {
+    "desc": "Query the income row through the table",
+    "s": {
+      "var": "s1",
+      "type": "Table",
+      "link": ["Alibaba Revenue Details Table", "Alibaba Performance Overview Table"]
+    },
+    "p": {
+      "var": "p1",
+      "type": "containRow"
+    },
+    "o": {
+      "var": "o1",
+      "type": "TableRow",
+      "link": [
+        "Revenue",
+        "Income",
+        "Earnings"
+      ]
+    }
+  },
+  {
+    "desc": "Query the cell for the 6 months ending September 30, 2024 from the income row",
+    "s": {
+      "var": "o1"
+    },
+    "p": {
+      "var": "p2",
+      "type": "containCell"
+    },
+    "o": {
+      "var": "o2",
+      "type": "TableCell",
+      "link": "6 months ending September 30, 2024"
+    }
+  }
+]
+```
+
+## Query components, subitems
+### input
+Recall the composition (details, subitems) of Alibaba's operating profit for the 6 months ending September 30, 2024.
+### output
+```json
+[
+  {
+    "desc": "Find the operating profit row data through the table, and find its subitems through this row data",
+    "s": {
+      "var": "s1",
+      "type": "Table",
+      "link": ["Alibaba Operating Profit Details Table"]
+    },
+    "p": {
+      "var": "p1",
+      "type": "containRow"
+    },
+    "o": {
+      "var": "o1",
+      "type": "TableRow",
+      "link": [
+        "Operating Profit"
+      ]
+    }
+  },
+  {
+    "desc": "Query subitems of the operating profit row data, which are also rows in the table",
+    "s": {
+      "var": "o1"
+    },
+    "p": {
+      "var": "p2",
+      "type": "subitem"
+    },
+    "o": {
+      "var": "o2",
+      "type": "TableRow"
+    }
+  },
+  {
+    "desc": "Query each subitem (multiple rows) for the TableCell for the 6 months ending September 30, 2024",
+    "s": {
+      "var": "o2"
+    },
+    "p": {
+      "var": "p3",
+      "type": "containCell"
+    },
+    "o": {
+      "var": "o3",
+      "type": "TableCell",
+      "link": [
+        "6 months ending September 30, 2024"
+      ]
+    }
+  }
+]
+```
+
+# real input
+$input
+
+# tables we have
+$table_names
+
+# your output
+"""
 
     def __init__(self, language: str):
         super().__init__(language)

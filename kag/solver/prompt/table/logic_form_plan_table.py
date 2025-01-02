@@ -65,10 +65,10 @@ class LogicFormPlanPrompt(PromptOp):
   ],
   "examples": [
     {
-      "input": "如果游戏收入按照目前的速度增长，2020年的游戏收入是多少美元？",
+      "input": "如果游戏收入按照目前的速度增长，2020年的游戏收入是多少？",
       "output": [
         {
-          "sub_question": "查找2018年和2019年游戏收入，按照美元计算",
+          "sub_question": "查找2018年和2019年游戏收入",
           "process_function": "Retrieval"
         },
         {
@@ -108,7 +108,104 @@ class LogicFormPlanPrompt(PromptOp):
   "failed_cases": "$history"
 }
 """
-    template_en = template_zh
+    template_en = """
+{
+  "task": "Decompose Subproblems",
+  "instruction": [
+    "Identify the core key steps to solve the problem and summarize them as subproblems.",
+    "Refer to the function capabilities to assign the subproblems to the appropriate functions for handling.",
+    "Refer to the failed_cases and try alternative decomposition strategies to generate new subproblems!"
+  ],
+  "pay_attention": [
+    "Your mathematical calculation ability is very poor, and you must use PythonCoder for solutions.",
+    "The decomposition of subproblems should be concise yet comprehensive, with each subproblem solvable independently; subproblems must be core key steps, not overly detailed execution steps.",
+    "The description of the subproblem should be complete without omitting any keywords, and the semantics should be clear and easy to understand.",
+    "You have domain_knowledge available for reference."
+  ],
+  "output_format": [
+    "Output in JSON format, with 'output' providing a list of subproblems.",
+    "Each subproblem includes 'sub_question' and 'process_function'."
+  ],
+  "domain_knowledge": "$dk",
+  "functions": [
+    {
+      "functionName": "Retrieval",
+      "description": "Includes a knowledge base that returns retrieval results based on the given retrieval condition (in natural language).",
+      "pay_attention": [
+        "Retrieval questions must be specific and explicit; Unsatisfactory question: Find financial statements. Specific question: Find the net profit value for the entire year of 2024."
+      ],
+      "knowledge_base_content": "$kg_content",
+      "examples": [
+        {
+          "knowledge_base_content": "SMIC 2024 Q3 financial report",
+          "input": "Recall all subitems of current assets from balance sheet information.",
+          "output": "Omitted"
+        }
+      ]
+    },
+    {
+      "functionName": "PythonCoder",
+      "description": "Write Python code to solve the given problem.",
+      "pay_attention": "Use only Python standard libraries.",
+      "examples": [
+        {
+          "input": "Which is greater, 9.8 or 9.11?",
+          "internal_processing_logic": "Write Python code ```python\nanswer=max(9.8, 9.11)\nprint(answer)```, call the executor to obtain the result.",
+          "output": "9.8"
+        },
+        {
+          "input": "What day is it today?",
+          "internal_processing_logic": "```python\nimport datetime\n\n# Get the current date\ntoday = datetime.datetime.now()\n\n# Format the date as the day of the week, %A gives the full weekday name\nday_of_week = today.strftime(\"%A\")\n\n# Print the result\nprint(\"Today is:\", day_of_week)\n```",
+          "output": "The example cannot provide an answer, as it depends on the actual runtime."
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "input": "If the game revenue grows at the current rate, what will be the game revenue in 2020 in dollars?",
+      "output": [
+        {
+          "sub_question": "Find the game revenues for 2018 and 2019, calculated in dollars.",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "Calculate the growth rate of game revenue from 2018 to 2019, and then calculate the game revenue for 2020 based on the growth rate.",
+          "process_function": "PythonCoder"
+        }
+      ]
+    },
+    {
+      "input": "Find two numbers whose product is 1038155 and their sum is 2508.",
+      "output": [
+        {
+          "sub_question": "Solve the system of equations to find the numbers that satisfy the conditions:\n1. The product of the two numbers is X * Y = 1038155\n2. The sum of the two numbers is X + Y = 2508\nUse mathematical methods or programming to compute the specific values of X and Y.",
+          "process_function": "PythonCoder"
+        }
+      ]
+    },
+    {
+      "input": "In Alibaba's financial report, which subitem has the highest value under current assets? What percentage does it represent of the total current assets?",
+      "output": [
+        {
+          "sub_question": "Retrieve the total value of current assets in Alibaba's latest balance sheet information.",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "Query all details of current assets in Alibaba's latest balance sheet information.",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "Based on the retrieved details of Alibaba's current assets, determine which subitem has the highest value and calculate what percentage it represents of the total current assets.",
+          "process_function": "PythonCoder"
+        }
+      ]
+    }
+  ],
+  "input": "$input",
+  "failed_cases": "$history"
+}
+"""
 
     def __init__(self, language: str):
         super().__init__(language)
