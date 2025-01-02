@@ -65,10 +65,10 @@ class LogicFormPlanPrompt(PromptOp):
   ],
   "examples": [
     {
-      "input": "如果游戏收入按照目前的速度增长，2020年的游戏收入是多少美元？",
+      "input": "如果游戏收入按照目前的速度增长，2020年的游戏收入是多少？",
       "output": [
         {
-          "sub_question": "查找2018年和2019年游戏收入，按照美元计算",
+          "sub_question": "查找2018年和2019年游戏收入",
           "process_function": "Retrieval"
         },
         {
