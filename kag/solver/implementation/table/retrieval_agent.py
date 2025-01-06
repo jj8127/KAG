@@ -503,7 +503,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         )
         can_answer = self.can_answer(answer)
         answer_res = answer
-        if "no" in can_answer.lower():
+        if not can_answer:
             # 尝试使用原始召回数据再回答一次
             docs = "\n\n".join(row_docs)
             llm: LLMClient = self.llm_module

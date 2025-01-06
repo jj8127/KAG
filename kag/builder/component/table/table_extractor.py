@@ -215,6 +215,7 @@ class TableExtractor(ExtractorABC, BaseTableSplitter):
         new_markdown = self.llm.invoke(
             {"input": input_str}, self.table_reformat, with_except=True
         )
+        new_markdown = new_markdown.strip("```").strip("markdown")
         # new_markdown = input_str
         # new_markdown = new_markdown.replace("&nbsp;&nbsp;", "-")
 

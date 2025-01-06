@@ -33,53 +33,28 @@ $question
 # your answer
 """
     template_en = """
-{
-    "Instruction": "You are an information analysis expert. Based on the given information and domain knowledge, conduct an analysis and output the content in the specified format.",
-    "Requirements": [
-        "Analyze based on the given information",
-        "Output in JSON format, including two fields: 'can_answer' and 'analysis'. 'can_answer' should be 'yes' or 'no', indicating whether an answer can be provided based on the given information; 'analysis' is the output of the analysis result.",
-        "The answer should include contextual information so that people with no background can understand it.",
-        "Do not attempt to convert numerical units; faithfully output the values as they are, including units and variables."
-    ],
-    "Example 1": {
-        "Question": "Who is older, Zhang San or Li Si?",
-        "Domain Knowledge": "The person with the earlier birth year is older.",
-        "Information": [
-            "Zhang San was born in 1990",
-            "Li Si was born in 1991"
-        ],
-        "Output": {
-            "can_answer": "yes",
-            "analysis": "Zhang San is older than Li Si because according to the retrieved information, Zhang San was born in 1990, while Li Si was born in 1991, so Zhang San is older than Li Si."
-        }
-    },
-    "Example 2": {
-        "Question": "What are the main businesses of Alibaba?",
-        "Domain Knowledge": "",
-        "Information": [
-            "Alibaba is a company of world-class scale",
-            "Alibaba's Taobao and Tmall are well-known e-commerce platforms in the world"\n        ],\n        "Output": {\n            "can_answer": "no",\n            "analysis": "The question cannot be answered based on the retrieved information, but it can be known that Alibaba's Taobao and Tmall are e-commerce platforms, suggesting that e-commerce is a major focus."
-        }
-    },
-    "Example 3": {
-        "Question": "How many stocks are there in the A-share market?",
-        "Domain Knowledge": "",
-        "Information": [
-            "A-shares refer to the stock market in mainland China",
-            "Alibaba is a company of world-class scale"
-        ],
-        "Output": {
-            "can_answer": "no",
-            "analysis": "The question cannot be answered based on the retrieved information, as the information provided is not relevant to the question."
-        }
-    },
-    "Task": {
-        "Question": "$question",
-        "Domain Knowledge": "$dk",
-        "Information": $docs,
-        "Output":
-    }
-}
+# task
+Based on the given information, answer the questions. 
+The answer should include contextual information so that someone without any background can understand. 
+Do not attempt to convert numerical units; faithfully output the numerical values as they are in the original text, including units and variables. 
+If it is not possible to provide an answer based on the given information, respond with: I don't know. and provide a detailed reason.
+
+# output format
+Plain text, without any markdown formatting.
+
+# context
+$docs
+
+# domain_knowledge
+$dk
+
+#上下文信息
+$history
+
+# question
+$question
+
+# your answer
 """
 
     def __init__(self, language: str):

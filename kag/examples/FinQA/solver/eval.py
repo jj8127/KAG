@@ -189,5 +189,5 @@ if __name__ == "__main__":
         logging.warning("###################################")
         logging.warning("end_eval_index=%d", i)
 
-        if i == 100:
+        if i == 10:
             break
