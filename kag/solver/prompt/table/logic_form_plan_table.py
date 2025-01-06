@@ -102,6 +102,23 @@ class LogicFormPlanPrompt(PromptOp):
           "process_function": "PythonCoder"
         }
       ]
+    },
+    {
+      "input": "在A公司担任高管又同时担任风险委员会主席的人，是哪个国家的人？",
+      "output": [
+        {
+          "sub_question": "查找A公司的高管名单",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "查找A公司风险委员会主席的人有哪些",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "以上子问题答案中共同人员有谁，是哪个国家的人",
+          "process_function": "Retrieval"
+        }
+      ]
     }
   ],
   "input": "$input",

@@ -7,7 +7,17 @@ logger = logging.getLogger(__name__)
 
 
 class FinStateSpoRetrieval(PromptOp):
-    template_zh = """示例 1:
+    template_zh = """
+# Task
+你是一名语言专家。从给定的SPO中，选择与问题相关的项返回
+
+# Instruction
+你的任务是给定的 SPO 候选项中选择相关的 SPO 文本来回答给定的问题。请确保它与 SPO 提及或问题匹配。
+输出必须从 SPO 候选项中选择，并且必须与其内容保持一致，以列表格式呈现。
+如果在 SPO 候选项中有多个正确答案，输出所有匹配的 SPO，尽可能多的返回相关结果。
+
+# examples    
+示例 1:
 问题：Woman's Viewpoint 是一本英国出版物吗？
 SPO 提及：出版物[Woman's Viewpoint] 国籍 国家
 SPO 候选项：['Woman's Viewpoint 从 1923 年出版到 1927 年', 'Woman's Viewpoint 由 Florence M. Sterling 出版', 'Woman's Viewpoint 创立于 1923 年', 'Woman's Viewpoint 在德克萨斯州创立', 'Woman's Viewpoint 是一本女性杂志', 'Rolandos Liatsos 出演 Woman in Mind', 'Rolandos Liatsos 出演 Woman in Mind']
@@ -27,17 +37,16 @@ SPO 提及：Table containRow TableRow
 SPO 候选项：['某公司业绩概要表 containRow 某公司业绩概要表-净利润', '某公司业绩概要表 containRow 某公司业绩概要表-摊薄每股收益']
 output：['某公司业绩概要表 containRow 某公司业绩概要表-净利润']
 
-要求：
-你是一名语言专家。你的任务是根据以下规则从给定的 SPO 候选项中选择正确的 SPO 文本来回答给定的问题。请确保它与 SPO 提及或问题匹配。
+# question
+$question
 
-输出必须从 SPO 候选项中选择，并且必须与其内容保持一致，以列表格式呈现。
-如果在 SPO 候选项中没有合适的答案，输出一个空列表。确保输出与问题或 SPO 提及高度匹配。
-如果在 SPO 候选项中有多个正确答案，输出所有匹配的 SPO。
+# SPO 提及
+$mention
 
-问题：$question
-SPO 提及: $mention
-SPO 候选项: $candis
-output:
+# SPO 候选项
+$candis
+
+your output:
 """
     template_en = """Examples 1:
 Question: Is the Woman's Viewpoint a British publication?

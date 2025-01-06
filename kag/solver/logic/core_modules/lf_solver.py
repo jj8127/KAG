@@ -113,7 +113,7 @@ class LFSolver:
                 except Exception as e:
                     logger.warning(f"_flat_passages_set convert score failed {e}", exc_info=True)
                 p_without_score = "#".join(p.split("#")[:-1])
-                if score < 0.5:
+                if score < 0.5 and len(filtered_passages) > 3:
                     continue
                 filtered_passages.append(p_without_score)
             for i, passage in enumerate(filtered_passages):

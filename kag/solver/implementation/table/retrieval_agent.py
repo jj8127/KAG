@@ -137,7 +137,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         docs = "\n\n".join(passages)
         llm: LLMClient = self.llm_module
         return llm.invoke(
-            {"docs": docs, "question": self.question},
+            {"docs": docs, "question": self.question, "dk": self.dk},
             self.select_docs,
             with_except=True,
         )
@@ -175,7 +175,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
                     "score": node["score"],
                 }
 
-        table_name_list = list(s_table_info.values())
+        table_name_list = list(s_table_info.keys())
         # table_name_list = [
         #     f"表名：{t['node']['name']}\n{t['node']['content']}" for t in s_nodes
         # ]
@@ -183,14 +183,13 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         # 生成get_spo符号
         llm: LLMClient = self.llm_module
         get_spo_list = llm.invoke(
-            {
-                "input": self.question,
-                "table_names": "\n".join([str(d) for d in table_name_list]),
-            },
+            {"input": self.question, "table_names": "\n".join([str(d) for d in table_name_list]), "dk": self.dk},
             self.gen_symbol,
             with_json_parse=False,
             with_except=True,
         )
+
+        print("table_symbol_retrival,get_spo_list=" + json.dumps(get_spo_list, ensure_ascii=False))
 
         # 在图上查询
         last_var = None
@@ -227,22 +226,16 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         kg_graph_deep_copy.merge_kg_graph(kg_graph)
         self._table_kg_graph_with_desc(kg_graph_deep_copy)
         graph_docs = kg_graph_deep_copy.to_answer_path()
-        graph_docs = json.dumps(graph_docs, ensure_ascii=False)
+        graph_docs = json.dumps(graph_docs, ensure_ascii=False, indent=2)
         last_data = kg_graph_deep_copy.get_entity_by_alias(last_var)
         if last_data:
             graph_docs = [str(d) for d in last_data]
 
         # 回答子问题
-        answer_analysis = llm.invoke(
-            {
-                "docs": graph_docs,
-                "question": self.question,
-                "dk": self.dk,
-                "history": str(history),
-            },
+        answer = llm.invoke(
+            {"docs": graph_docs, "question": self.question, "dk": self.dk, "history": str(history)},
             self.sub_question_answer,
             with_except=True,
-            with_json_parse=True,
         )
 
         # 转换graph为可以页面可展示的格式
@@ -253,25 +246,26 @@ class TableRetrievalAgent(ChunkRetrieverABC):
             f"```java\n{sub_logic_nodes_str}\n```",
         ]
         cur_content, sub_graph = convert_lf_res_to_report_format(
-            None, f"graph_{generate_random_string(3)}", 0, [], kg_graph
+            None, f"graph_{generate_random_string(3)}", 0, [], kg_graph_deep_copy
         )
-        context += cur_content
-        history_log = {
-            "report_info": {
-                "context": context,
-                "sub_graph": [sub_graph] if sub_graph else None,
-            }
-        }
+        if cur_content:
+            context += cur_content
+        else:
+            context += [graph_docs]
+        history_log = {"report_info": {"context": context, "sub_graph": [sub_graph] if sub_graph else None}}
 
-        return (
-            answer_analysis.get("can_answer", "no").lower() == "yes",
-            answer_analysis.get("analysis", ""),
-            [history_log],
-        )
+        return self.can_answer(answer), answer, [history_log]
 
+    def can_answer(self, answer):
+        if not answer:
+            return False
+        return "i don't know" not in answer.lower()
     def _table_kg_graph_with_desc(self, kg_graph: KgGraph):
         table_cell_type = self.chunk_retriever.schema_util.get_label_within_prefix(
             "TableCell"
+        )
+        table_row_type = self.chunk_retriever.schema_util.get_label_within_prefix(
+            "TableRow"
         )
         for _, edge_list in kg_graph.edge_map.items():
             for edge in edge_list:
@@ -491,7 +485,7 @@ class TableRetrievalAgent(ChunkRetrieverABC):
         type_str = ":`" + type_str + "`"
         return type_str
 
-    def answer(self, histoty: SearchTree):
+    def answer(self, history: SearchTree):
         row_docs = self.recall_docs(query=self.question)
         print(f"rowdocs,query={self.question}\n{row_docs}")
         if len(row_docs) <= 0:
@@ -502,29 +496,25 @@ class TableRetrievalAgent(ChunkRetrieverABC):
             return False, rerank_docs, None
         docs = "\n\n".join(rerank_docs)
         llm: LLMClient = self.llm_module
-        answer_analysis = llm.invoke(
-            {"docs": docs, "question": self.question, "dk": self.dk, "history": str(histoty)},
+        answer = llm.invoke(
+            {"docs": docs, "question": self.question, "dk": self.dk, "history": str(history)},
             self.sub_question_answer,
             with_except=True,
         )
-        can_answer = answer_analysis.get("can_answer", "no")
-        answer_res = answer_analysis.get("analysis", "")
+        can_answer = self.can_answer(answer)
+        answer_res = answer
         if "no" in can_answer.lower():
             # 尝试使用原始召回数据再回答一次
             docs = "\n\n".join(row_docs)
             llm: LLMClient = self.llm_module
-            answer_analysis = llm.invoke(
-                {"docs": docs, "question": self.question, "dk": self.dk, "history": str(histoty)},
+            answer = llm.invoke(
+                {"docs": docs, "question": self.question, "dk": self.dk, "history": str(history)},
                 self.sub_question_answer,
                 with_except=True,
             )
-            can_answer = answer_analysis.get("can_answer", "no")
-            answer_res = answer_analysis.get("analysis", "")
-        return (
-            can_answer.lower() == "yes",
-            answer_res,
-            [{"report_info": {"context": docs, "sub_graph": None}}],
-        )
+            can_answer = self.can_answer(answer)
+            answer_res = answer
+        return can_answer, answer_res, [{"report_info": {"context": docs, "sub_graph": None}}]
 
     def get_sub_item_reall(self, entities):
         index = self.question.find("的所有子项")

@@ -94,16 +94,18 @@ class SearchTree:
             children = list(self.dag.successors(node))
             if not children:
                 if node.answer is not None:
-                    rst_str += f"\nquestion:{node.question},answer:{node.answer}"
-                return
+                    rst_str += f"question:{node.question},answer:{node.answer}"
+                return rst_str
             children = sorted(children, key=lambda x: x.time_stamp)
-            filtered_results = []
+            child_rst_str_list = []
             for child in children:
-                build_str_context(child, rst_str)
-                rst_str += f"\nquestion:{node.question},answer:{node.answer}"
+                child_rst_str = build_str_context(child, rst_str)
+                child_rst_str_list.append(child_rst_str)
+            if node.answer is not None:
+                child_rst_str_list.append(f"question:{node.question},answer:{node.answer}")
+            return "\n".join(child_rst_str_list)
         rst_str = ""
-        build_str_context(self.root_node, rst_str)
-        return rst_str
+        return build_str_context(self.root_node, rst_str)
 
     def as_subquestion_context_json(self):
         """
