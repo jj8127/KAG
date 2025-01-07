@@ -1,4 +1,5 @@
 import os
+import json
 import time
 from typing import List
 import logging
@@ -204,7 +205,7 @@ class TableReasoner(KagReasonerABC):
             history.set_now_plan(None)
             history_str = str(history)
         variables = {
-            "input": history.root_node.question,
+            "input": json.dumps(history.root_node.question),
             "kg_content": kg_content,
             "history": history_str,
             "dk": history.dk,

@@ -31,21 +31,6 @@ class LogicFormPlanPrompt(PromptOp):
   "domain_knowledge": "$dk",
   "functions": [
     {
-      "functionName": "Retrieval",
-      "description": "包含一个知识库，根据给出的检索条件(自然语言)，返回检索结果。",
-      "pay_attention": [
-        "Retrieval的问题必须是具体明确的；不合格的问题：查找财务报表。具体明确的问题：查找2024年全年的净利润值。"
-      ],
-      "knowledge_base_content": "$kg_content",
-      "examples": [
-        {
-          "knowledge_base_content": "中芯国际2024第3季度财务报表",
-          "input": "从资产负债信息中召回流动资产的所有子项",
-          "output": "略"
-        }
-      ]
-    },
-    {
       "functionName": "PythonCoder",
       "description": "对给出的问题，编写python代码求解。",
       "pay_attention": "只使用python基础库",
@@ -64,19 +49,6 @@ class LogicFormPlanPrompt(PromptOp):
     }
   ],
   "examples": [
-    {
-      "input": "如果游戏收入按照目前的速度增长，2020年的游戏收入是多少？",
-      "output": [
-        {
-          "sub_question": "查找2018年和2019年游戏收入",
-          "process_function": "Retrieval"
-        },
-        {
-          "sub_question": "根据2018年和2019年游戏收入，计算2019年游戏收入增长率；再根据增长率，计算2020年游戏收入",
-          "process_function": "PythonCoder"
-        }
-      ]
-    },
     {
       "input": "找到两个数，他们的乘积为1038155，他们的和为2508",
       "output": [
@@ -100,23 +72,6 @@ class LogicFormPlanPrompt(PromptOp):
         {
           "sub_question": "根据召回的阿里巴巴流动资产详情，计算最高的子项是哪个？并计算最高子项占总流动资产的比例是多少？",
           "process_function": "PythonCoder"
-        }
-      ]
-    },
-    {
-      "input": "在A公司担任高管又同时担任风险委员会主席的人，是哪个国家的人？",
-      "output": [
-        {
-          "sub_question": "查找A公司的高管名单",
-          "process_function": "Retrieval"
-        },
-        {
-          "sub_question": "查找A公司风险委员会主席的人有哪些",
-          "process_function": "Retrieval"
-        },
-        {
-          "sub_question": "以上子问题答案中共同人员有谁，是哪个国家的人",
-          "process_function": "Retrieval"
         }
       ]
     }
