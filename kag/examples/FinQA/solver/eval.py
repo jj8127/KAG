@@ -150,6 +150,8 @@ def build_tatqa(json_data):
     os.remove(temp_file_path)
 
 
+DEBUG_INDEX = 1
+
 if __name__ == "__main__":
     # 先构建
     project_root = os.environ["KAG_PROJECT_ROOT_PATH"]
@@ -166,10 +168,15 @@ if __name__ == "__main__":
 
     for i, article in enumerate(article_list):
         logging.warning("start_eval_index=%d", i)
+        if DEBUG_INDEX is not None and i != DEBUG_INDEX:
+            if i > DEBUG_INDEX:
+                break
+            continue
+
 
         # 构建
-        clear_neo4j_data("finqa")
-        build_tatqa(article)
+        # clear_neo4j_data("finqa")
+        # build_tatqa(article)
 
         # 评估
         _eval = EvaForFinQA()
@@ -189,5 +196,5 @@ if __name__ == "__main__":
         logging.warning("###################################")
         logging.warning("end_eval_index=%d", i)
 
-        if i == 10:
+        if i == 100:
             break
