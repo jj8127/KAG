@@ -44,7 +44,7 @@ class PythonCoderAgent(KagBaseModule):
         python_code = llm.invoke(
             {
                 "question": self.question,
-                "context": str(self.history.as_subquestion_context_json()) + "\n\n" + self.context,
+                "context": f"{self.history.as_subquestion_context_json()} \n\n {self.context}",
                 "error": error,
                 "dk": self.history.dk,
             },
