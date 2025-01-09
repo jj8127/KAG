@@ -21,8 +21,6 @@ from kag.solver.implementation.lf_chunk_retriever import LFChunkRetriever
 from kag.solver.logic.core_modules.lf_solver import LFSolver
 from kag.solver.logic.solver_pipeline import SolverPipeline
 from kag.solver.tools.info_processor import ReporterIntermediateProcessTool
-from kag_ant.medicine_thinker.med_thinker import MedicineThinker
-from kag_ant.thinker.thinker import Thinker
 
 
 class SolverMain:
