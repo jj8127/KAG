@@ -194,8 +194,8 @@ class TableReasoner(KagReasonerABC):
                 self.resp_think_generator,
                 with_except=True,
             )
-        #self.report_pipleline(history, final_answer, final_answer_form_llm)
-        return final_answer
+        # self.report_pipleline(history, final_answer, final_answer_form_llm)
+        return final_answer, history
 
     def _get_sub_question_list(self, history: SearchTree, kg_content: str):
         llm: LLMClient = self.llm_module
