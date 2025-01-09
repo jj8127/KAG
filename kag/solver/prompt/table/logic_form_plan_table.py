@@ -31,21 +31,6 @@ class LogicFormPlanPrompt(PromptOp):
   "domain_knowledge": "$dk",
   "functions": [
     {
-      "functionName": "Retrieval",
-      "description": "包含一个知识库，根据给出的检索条件(自然语言)，返回检索结果。",
-      "pay_attention": [
-        "Retrieval的问题必须是具体明确的；不合格的问题：查找财务报表。具体明确的问题：查找2024年全年的净利润值。"
-      ],
-      "knowledge_base_content": "$kg_content",
-      "examples": [
-        {
-          "knowledge_base_content": "中芯国际2024第3季度财务报表",
-          "input": "从资产负债信息中召回流动资产的所有子项",
-          "output": "略"
-        }
-      ]
-    },
-    {
       "functionName": "PythonCoder",
       "description": "对给出的问题，编写python代码求解。",
       "pay_attention": "只使用python基础库",
@@ -83,40 +68,6 @@ class LogicFormPlanPrompt(PromptOp):
         {
           "sub_question": "解方程组以找到满足条件的数：\n1. 两数乘积为 X * Y = 1038155\n2. 两数和为 X + Y = 2508\n使用数学方法或编程计算 X 和 Y 的具体值。",
           "process_function": "PythonCoder"
-        }
-      ]
-    },
-    {
-      "input": "阿里巴巴财报中最新的资产负债信息中流动资产最高的子项是哪个？其占流动资产的比例是多少？",
-      "output": [
-        {
-          "sub_question": "召回阿里巴巴最新的资产负债信息中流动资产总值",
-          "process_function": "Retrieval"
-        },
-        {
-          "sub_question": "查询阿里巴巴最新的资产负债信息中所有流动资产详情",
-          "process_function": "Retrieval"
-        },
-        {
-          "sub_question": "根据召回的阿里巴巴流动资产详情，计算最高的子项是哪个？并计算最高子项占总流动资产的比例是多少？",
-          "process_function": "PythonCoder"
-        }
-      ]
-    },
-    {
-      "input": "在A公司担任高管又同时担任风险委员会主席的人，是哪个国家的人？",
-      "output": [
-        {
-          "sub_question": "查找A公司的高管名单",
-          "process_function": "Retrieval"
-        },
-        {
-          "sub_question": "查找A公司风险委员会主席的人有哪些",
-          "process_function": "Retrieval"
-        },
-        {
-          "sub_question": "以上子问题答案中共同人员有谁，是哪个国家的人",
-          "process_function": "Retrieval"
         }
       ]
     }

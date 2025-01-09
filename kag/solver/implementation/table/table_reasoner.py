@@ -68,7 +68,7 @@ class TableReasoner(KagReasonerABC):
             "report_tool", None
         )
 
-    def reason(self, question: str):
+    def reason(self, question: str, context:str):
         """
         Processes a given question by planning and executing logical forms to derive an answer.
         Parameters:
@@ -133,7 +133,7 @@ class TableReasoner(KagReasonerABC):
                     )
                 elif "PythonCoder" == func_str:
                     can_answer, sub_answer = self._call_python_coder_func(
-                        init_question=question, node=node, history=history
+                        init_question=question, node=node, history=history, context=context
                     )
                 else:
                     raise RuntimeError(f"unsupported agent {func_str}")
@@ -330,9 +330,9 @@ class TableReasoner(KagReasonerABC):
                 node.sub_graph = trace_log[0]["report_info"]["sub_graph"]
 
     def _call_python_coder_func(
-        self, init_question, node: SearchTreeNode, history: SearchTree
+        self, init_question, node: SearchTreeNode, history: SearchTree, context:str
     ):
-        agent = PythonCoderAgent(init_question, node.question, history, **self.kwargs)
+        agent = PythonCoderAgent(init_question, node.question, history, context, **self.kwargs)
         sub_answer, code = agent.answer()
         node.answer = sub_answer
         node.answer_desc = self._process_coder_desc(code)
