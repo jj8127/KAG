@@ -3,7 +3,7 @@ import time
 from typing import List
 import logging
 from concurrent.futures import ThreadPoolExecutor
-
+from tenacity import stop_after_attempt, retry
 from kag.examples.finstate.solver.impl.chunk_lf_planner import ChunkLFPlanner
 from kag.examples.finstate.solver.impl.spo_generator import SPOGenerator
 from kag.examples.finstate.solver.impl.spo_lf_planner import SPOLFPlanner
@@ -197,6 +197,7 @@ class TableReasoner(KagReasonerABC):
         # self.report_pipleline(history, final_answer, final_answer_form_llm)
         return final_answer, history
 
+    @retry(stop=stop_after_attempt(3))
     def _get_sub_question_list(self, history: SearchTree, kg_content: str):
         llm: LLMClient = self.llm_module
         history_str = None
