@@ -51,7 +51,7 @@ def parse_original_string(original_string):
 
 if __name__ == "__main__":
     solver = FinStateSolver(KAG_PROJECT_ID=1)
-    file_pat = "/Users/liuxiao/Downloads/1224_eval_all.csv"
+    file_pat = "./1224_eval_all.csv"
 
     df = pd.read_csv(file_pat)
     df['kag_output'] = ''
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         df.at[index, 'json_prompt'] = context
 
         
-    out_file = "/Users/liuxiao/Downloads/1224_eval_all_kagout2.csv"
+    out_file = "./1224_eval_all_kagout.csv"
     df.to_csv(out_file, index=False)
     
     #question = "阿里巴巴最新的营业收入是多少，哪个部分收入占比最高，占了百分之多少？"
