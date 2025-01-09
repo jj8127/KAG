@@ -5,7 +5,7 @@ import contextlib
 import traceback
 import tempfile
 import subprocess
-
+from tenacity import stop_after_attempt, retry
 from kag.solver.common.base import KagBaseModule
 
 from kag.solver.implementation.table.search_tree import SearchTree, SearchTreeNode
