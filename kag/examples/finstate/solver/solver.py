@@ -54,20 +54,22 @@ if __name__ == "__main__":
     file_pat = "./1224_eval_all.csv"
 
     df = pd.read_csv(file_pat)
-    df['kag_output'] = ''
-    df['memory'] = ''
     df['json_prompt'] = ''
+    df['kag_output'] = ''
+    df['history'] = ''
+    df["sub_question_list"] = ''
     for index, row in df.iterrows():
         if row['错误分类']!="数值计算错误":
             continue
         question = row['当前问题']
         context = parse_original_string(row["prompt"])
         solver.run(TableReasoner.DOMAIN_KNOWLEDGE_INJECTION +  " context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'", context = "")
-        response, history = solver.run(question, context)
+        response, history, sub_question_list = solver.run(question, context)
         print(index)
         df.at[index, 'kag_output'] = response
-        df.at[index, 'memory'] = str(history)
+        df.at[index, 'history'] = str(history)
         df.at[index, 'json_prompt'] = context
+        df.at[index, "sub_question_list"] = str(sub_question_list)
 
         
     out_file = "./1224_eval_all_kagout.csv"

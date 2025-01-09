@@ -195,7 +195,7 @@ class TableReasoner(KagReasonerABC):
                 with_except=True,
             )
         # self.report_pipleline(history, final_answer, final_answer_form_llm)
-        return final_answer, history
+        return final_answer, history, sub_question_list
 
     @retry(stop=stop_after_attempt(3))
     def _get_sub_question_list(self, history: SearchTree, kg_content: str):
