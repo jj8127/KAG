@@ -79,4 +79,9 @@ setup(
     package_data={
         "bin": ["*"],
     },
+    entry_points={
+        "console_scripts": [
+            "knext=knext.command.knext_cli:_main",
+        ]
+    },
 )

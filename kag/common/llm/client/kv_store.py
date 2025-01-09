@@ -21,7 +21,7 @@ class KVStore:
         self.read_lock = threading.Lock()
         self.write_lock = threading.Lock()
 
-        self.disable = False
+        self.disable = True
 
     def __del__(self):
         self.conn.close()

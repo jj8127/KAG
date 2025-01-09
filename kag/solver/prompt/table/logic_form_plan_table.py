@@ -15,7 +15,7 @@ class LogicFormPlanPrompt(PromptOp):
   "task": "拆解子问题",
   "instruction": [
     "找出解决问题的核心关键步骤，总结为子问题。",
-    "参考函数能力，将子问题分配给合适的函数进行处理。",
+    "参考functions 中提供的函数能力，将子问题分配给合适的函数进行处理。",
     "参考failed_cases中失败的尝试，改变思路尝试其他拆解方式，生成新的子问题！"
   ],
   "pay_attention": [
@@ -28,7 +28,6 @@ class LogicFormPlanPrompt(PromptOp):
     "输出json格式，output给出子问题列表",
     "每个子问题包含sub_question和process_function"
   ],
-  "domain_knowledge": "$dk",
   "functions": [
     {
       "functionName": "PythonCoder",
@@ -49,19 +48,6 @@ class LogicFormPlanPrompt(PromptOp):
     }
   ],
   "examples": [
-    {
-      "input": "如果游戏收入按照目前的速度增长，2020年的游戏收入是多少？",
-      "output": [
-        {
-          "sub_question": "查找2018年和2019年游戏收入",
-          "process_function": "Retrieval"
-        },
-        {
-          "sub_question": "根据2018年和2019年游戏收入，计算2019年游戏收入增长率；再根据增长率，计算2020年游戏收入",
-          "process_function": "PythonCoder"
-        }
-      ]
-    },
     {
       "input": "找到两个数，他们的乘积为1038155，他们的和为2508",
       "output": [
