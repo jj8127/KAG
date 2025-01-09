@@ -25,7 +25,7 @@ class LogicFormPlanPrompt(PromptOp):
     "你有领域知识domain_knowledge可供参考"
   ],
   "output_format": [
-    "输出标准json格式数据，不要在json 数据后添加任何信息，提那家output给出子问题列表",
+    "输出标准json格式数据，不要在json 数据后添加任何信息; 参考 examples 格式, 在output中给出子问题列表",
     "每个子问题包含sub_question和process_function"
   ],
   "functions": [
