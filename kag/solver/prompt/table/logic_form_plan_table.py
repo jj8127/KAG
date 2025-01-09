@@ -12,7 +12,7 @@ from kag.common.base.prompt_op import PromptOp
 class LogicFormPlanPrompt(PromptOp):
     template_zh = """
 {
-  "task": "拆解子问题",
+  "task": "拆解子问题,并按标准json格式输出",
   "instruction": [
     "找出解决问题的核心关键步骤，总结为子问题。",
     "参考functions 中提供的函数能力，将子问题分配给合适的函数进行处理。",
@@ -25,7 +25,7 @@ class LogicFormPlanPrompt(PromptOp):
     "你有领域知识domain_knowledge可供参考"
   ],
   "output_format": [
-    "输出json格式，output给出子问题列表",
+    "输出标准json格式数据，不要在json 数据后添加任何信息，提那家output给出子问题列表",
     "每个子问题包含sub_question和process_function"
   ],
   "functions": [
