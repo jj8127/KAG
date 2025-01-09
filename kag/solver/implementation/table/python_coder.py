@@ -15,13 +15,14 @@ from kag.common.llm.client import LLMClient
 
 class PythonCoderAgent(KagBaseModule):
     def __init__(
-        self, init_question: str, question: str, history: SearchTree, **kwargs
+        self, init_question: str, question: str, history: SearchTree, context:str, **kwargs
     ):
         super().__init__(**kwargs)
 
         self.init_question = init_question
         self.question = question
         self.history = history
+        self.context = context
         self.code_prompt = PromptOp.load(self.biz_scene, "python_coder_prompt")(
             language=self.language
         )
@@ -43,7 +44,7 @@ class PythonCoderAgent(KagBaseModule):
         python_code = llm.invoke(
             {
                 "question": self.question,
-                "context": str(self.history.as_subquestion_context_json()),
+                "context": str(self.history.as_subquestion_context_json()) + "\n\n" + self.context,
                 "error": error,
                 "dk": self.history.dk,
             },
