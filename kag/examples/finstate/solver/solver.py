@@ -58,13 +58,22 @@ if __name__ == "__main__":
     df['kag_output'] = ''
     df['history'] = ''
     df["sub_question_list"] = ''
+    index = 0
     for index, row in df.iterrows():
+        index += 1
         if row['错误分类']!="数值计算错误":
+            continue
+
+        if index >= 2:
             continue
         question = row['当前问题']
         context = parse_original_string(row["prompt"])
         solver.run(TableReasoner.DOMAIN_KNOWLEDGE_INJECTION +  " context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'", context = "")
-        response, history, sub_question_list = solver.run(question, context)
+        try:
+            response, history, sub_question_list = solver.run(question, context)
+        except:
+            print(f"error: {question}")
+            pass
         print(index)
         df.at[index, 'kag_output'] = response
         df.at[index, 'history'] = str(history)
@@ -73,7 +82,7 @@ if __name__ == "__main__":
 
         
     out_file = "./1224_eval_all_kagout.csv"
-    df.to_csv(out_file, index=False)
+    df.to_csv(out_file, index=False, sep = "##$##", encoding="utf-8")
     
     #question = "阿里巴巴最新的营业收入是多少，哪个部分收入占比最高，占了百分之多少？"
     #question = "阿里国际数字商业集团24年截至9月30日止六个月的收入是多少？它的经营利润率是多少？"
