@@ -50,7 +50,7 @@ def parse_original_string(original_string):
     return json.dumps(structured_data, ensure_ascii=False, indent=2)
 
 if __name__ == "__main__":
-    solver = FinStateSolver(KAG_PROJECT_ID=1)
+    solver = FinStateSolver(KAG_PROJECT_ID=300024)
     file_pat = "./1224_eval_all.csv"
 
     df = pd.read_csv(file_pat)
@@ -60,11 +60,11 @@ if __name__ == "__main__":
     df["sub_question_list"] = ''
     tmp_index = 0
     for index, row in df.iterrows():
-        tmp_index += 1
         if row['错误分类']!="数值计算错误":
             continue
 
-        if tmp_index >= 2:
+        tmp_index += 1
+        if tmp_index >= 200:
             continue
         question = row['当前问题']
         context = parse_original_string(row["prompt"])
