@@ -73,7 +73,8 @@ class PythonCoderAgent(KagBaseModule):
                 print(f"subprocess.run failed {e}")
         finally:
             # 清理临时文件
-            os.remove(temp_file_path)
+            #os.remove(temp_file_path)
+            pass
 
         # 获取捕获的输出和错误信息
         stdout_value = result.stdout
