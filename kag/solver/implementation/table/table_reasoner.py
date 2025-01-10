@@ -182,6 +182,7 @@ class TableReasoner(KagReasonerABC):
                 self.resp_generator,
                 with_except=True,
             )
+            history.root_node.answer = final_answer
         else:
             # 无法直接给出答案，则给出用户关心的信息
             final_answer_form_llm = False
@@ -194,6 +195,7 @@ class TableReasoner(KagReasonerABC):
                 self.resp_think_generator,
                 with_except=True,
             )
+            history.root_node.answer = final_answer
         # self.report_pipleline(history, final_answer, final_answer_form_llm)
         return final_answer, history, sub_question_list
 
