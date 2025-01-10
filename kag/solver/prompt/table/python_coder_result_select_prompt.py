@@ -21,6 +21,7 @@ class PythonCoderResultSelectPrompt(PromptOp):
 
 # PayAttention
 特别注意答案不一致的情况，你必须仔细判断和甄别，选出最正确的结果。
+index从0开始，严格按照标题给出的index返回。
 
 # OutputFormat
 先一步一步的输出你的思考过程，最后给出正确答案的index。
@@ -56,6 +57,7 @@ If none of the answers address the question, return: I don't know, and provide a
 # PayAttention
 Pay special attention to inconsistent answers. 
 You must carefully analyze and distinguish to choose the most correct result.
+Index starts from 0, strictly return the index as given in the title.
 
 # OutputFormat
 First, output your thought process step by step, and finally give the index of the correct answer. 

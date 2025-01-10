@@ -45,9 +45,10 @@ class PythonCoderAgent(KagBaseModule):
                 future.result() for future in concurrent.futures.as_completed(futures)
             ]
         answers_str = ""
-        select_ans_str = 1
+        as_index = 0
         for ans, code in results:
-            answers_str += f"### answer{select_ans_str}\n{ans}\n```python{code}```\n\n"
+            answers_str += f"### answer{as_index}\n{ans}\n```python{code}```\n\n"
+            as_index += 1
         llm: LLMClient = self.llm_module
         select_ans_str = llm.invoke(
             {
