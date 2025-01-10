@@ -61,7 +61,7 @@ class LogicFormPlanPrompt(PromptOp):
       "output": [
         {
           "sub_question": "查询当前余额宝的年化收益率。",
-          "process_function": "PythonCoder"
+          "process_function": "Retrieval"
         },{
           "sub_question": "根据年化收益率计算10万存入余额宝的每日收益。",
           "process_function": "PythonCoder"
@@ -72,7 +72,7 @@ class LogicFormPlanPrompt(PromptOp):
       "output": [
         {
           "sub_question": "查询余额宝当前的年化收益率。",
-          "process_function": "PythonCoder"
+          "process_function": "Retrieval"
         },{
           "sub_question": "根据年化收益率计算10万元存入余额宝一年的收益。",
           "process_function": "PythonCoder"

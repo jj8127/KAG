@@ -42,6 +42,10 @@ class TableReasoner(KagReasonerABC):
         self.session_id = kwargs.get("session_id", 0)
         self.dk = self._query_dk()
 
+        self.llm_retrieval_prompt = PromptOp.load(
+            self.biz_scene, "llm_retrieval_prompt"
+        )(language=self.language)
+
         self.logic_form_plan_prompt = PromptOp.load(
             self.biz_scene, "logic_form_plan_table"
         )(language=self.language)
@@ -128,9 +132,13 @@ class TableReasoner(KagReasonerABC):
                 # answer subquestion
                 sub_answer = None
                 if "Retrieval" == func_str:
-                    can_answer, sub_answer = self._call_retravel_func(
-                        question, node, history
+                    can_answer, sub_answer = self._get_llm_retrieval(
+                        sub_question, history, context
                     )
+                    # can_answer, sub_answer = self._call_retravel_func(
+                    #     question, node, history
+                    # )
+
                 elif "PythonCoder" == func_str:
                     can_answer, sub_answer = self._call_python_coder_func(
                         init_question=question, node=node, history=history, context=context
@@ -142,7 +150,7 @@ class TableReasoner(KagReasonerABC):
                 self.report_pipleline(history)
 
                 print("subquestion=" + str(sub_q_str) + ",answer=" + str(sub_answer))
-                print("history=" + str(history))
+                # print("history=" + str(history))
                 # reflection
                 if not can_answer:
                     # 重新进行规划
@@ -220,6 +228,28 @@ class TableReasoner(KagReasonerABC):
         history.set_now_plan(sub_question_list)
         return sub_question_list
 
+    @retry(stop=stop_after_attempt(3))
+    def _get_llm_retrieval(self, question: str, history: SearchTree, context: str):
+        llm: LLMClient = self.llm_module
+        history_str = None
+        # if history.now_plan is not None:
+        #     history.set_now_plan(None)
+        #     history_str = str(history)
+        variables = {
+            "question": question,
+            # "history": history_str,
+            "docs": context,
+        }
+        sub_answer = llm.invoke(
+            variables=variables,
+            prompt_op=self.llm_retrieval_prompt,
+            with_except=True,
+        )
+        history.set_now_plan(sub_answer)
+        return (
+            sub_answer is not None and "i don't know" not in sub_answer.lower()
+        ), sub_answer
+    
     def _call_spo_retravel_func(self, query):
         lf_planner = SPOLFPlanner(
             KAG_PROJECT_ID=self.project_id, KAG_PROJECT_HOST_ADDR=self.host_addr
