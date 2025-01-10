@@ -36,12 +36,12 @@ class LogicFormPlanPrompt(PromptOp):
       "examples": [
         {
           "input": "9.8和9.11哪个大？",
-          "internal_processing_logic": "编写python代码```python\nanswer=max(9.8, 9.11)\nprint(answer)```, 调用执行器获得结果",
+          "internal_processing_logic": "#编写python代码 \nanswer=max(9.8, 9.11)\nprint(answer) \n#调用执行器获得结果",
           "output": "9.8"
         },
         {
           "input": "今天星期几？",
-          "internal_processing_logic": "```python\nimport datetime\n\n# 获取当前日期\ntoday = datetime.datetime.now()\n\n# 将日期格式化为星期几，%A会给出完整的星期名称\nday_of_week = today.strftime(\"%A\")\n\n# 打印结果\nprint(\"今天是:\", day_of_week)\n```",
+          "internal_processing_logic": "python\nimport datetime\n\n# 获取当前日期\ntoday = datetime.datetime.now()\n\n# 将日期格式化为星期几，%A会给出完整的星期名称\nday_of_week = today.strftime(\"%A\")\n\n# 打印结果\nprint(\"今天是:\", day_of_week)\n",
           "output": "例子中无法给出答案，取决于具体的运行时间"
         }
       ]
@@ -53,6 +53,31 @@ class LogicFormPlanPrompt(PromptOp):
       "output": [
         {
           "sub_question": "解方程组以找到满足条件的数：\n1. 两数乘积为 X * Y = 1038155\n2. 两数和为 X + Y = 2508\n使用数学方法或编程计算 X 和 Y 的具体值。",
+          "process_function": "PythonCoder"
+        }
+      ]
+    },{
+      "input": "10万存余额宝每天可以拿到多少钱",
+      "output": [
+        {
+          "sub_question": "查询当前余额宝的年化收益率。",
+          "process_function": "PythonCoder"
+        },{
+          "sub_question": "根据年化收益率计算10万存入余额宝的每日收益。",
+          "process_function": "PythonCoder"
+        }
+      ]
+    },{
+      "input": "10万存余额宝每周可以拿到多少钱",
+      "output": [
+        {
+          "sub_question": "查询余额宝当前的年化收益率。",
+          "process_function": "PythonCoder"
+        },{
+          "sub_question": "根据年化收益率计算10万元存入余额宝一年的收益。",
+          "process_function": "PythonCoder"
+        },{
+          "sub_question": "根据年化收益计算每周收益。",
           "process_function": "PythonCoder"
         }
       ]
