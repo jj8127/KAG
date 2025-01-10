@@ -3,6 +3,7 @@ import time
 from typing import List
 import logging
 from concurrent.futures import ThreadPoolExecutor
+from retry import retry
 
 from kag.examples.finstate.solver.impl.chunk_lf_planner import ChunkLFPlanner
 from kag.examples.finstate.solver.impl.spo_generator import SPOGenerator
@@ -94,6 +95,7 @@ class TableReasoner(KagReasonerABC):
         kg_content = ""
 
         try_times = 3
+        step_info_record = []
         while try_times > 0:
             try_times -= 1
             sub_question_faild = False
@@ -141,6 +143,10 @@ class TableReasoner(KagReasonerABC):
                     # 重新进行规划
                     sub_question_faild = True
                     break
+                step_info_record.append({
+                    'answer': sub_answer,
+                    'desc': node.answer_desc
+                })
             if sub_question_faild:
                 # logic form planing
                 sub_question_list = self._get_sub_question_list(
@@ -173,8 +179,11 @@ class TableReasoner(KagReasonerABC):
                 with_except=True,
             )
         self.report_pipleline(history, final_answer, final_answer_form_llm)
+        # import json
+        # final_answer = f"{final_answer}\nsteps:\n{json.dumps(step_info_record,ensure_ascii=False, indent=2)}"
         return final_answer
 
+    @retry(tries=3)
     def _get_sub_question_list(self, history: SearchTree, kg_content: str):
         llm: LLMClient = self.llm_module
         history_str = None

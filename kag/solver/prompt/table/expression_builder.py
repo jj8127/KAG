@@ -18,10 +18,34 @@ from kag.common.base.prompt_op import PromptOp
 
 
 class ExpressionBuilder(PromptOp):
-
+    template_zh = """{
+  "instruction": "你是一个数学专家，请按照给出的问题和数据，输出计算表达式。表达式是Python语法，可以被eval执行。不要包含变量。",
+  "example": [
+    {
+      "input": {
+        "question": "Calculate the current rate.",
+        "context": {
+          "overall_question": "What was gaming revenue in 2020 if it continues to grow at its current rate?",
+          "history": [
+            {
+              "subquery": "Get gaming revenue for 2019, year before 2020.",
+              "answer": "1733"
+            },
+            {
+              "subquery": "Get gaming revenue for 2018, year before 2019.",
+              "answer": "1912"
+            }
+          ]
+        }
+      },
+      "output": "1.0*(1733-1912)/1912"
+    }
+  ],
+  "input": "$input"
+}"""
     template_en = """
 {
-  "instruction": "你是一个数学专家，请按照给出的问题和数据，输出计算表达式。表达式是Python语法，可以被eval执行。不要包含变量。",
+  "instruction": "You are a math expert. According to the given question and data, output a calculation expression. The expression should be in Python syntax and can be executed by eval. Do not include variables.",
   "example": [
     {
       "input": {

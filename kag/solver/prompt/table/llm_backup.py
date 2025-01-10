@@ -16,7 +16,12 @@ $dk
 # 问题
 $question
 """
-    template_en = template_zh
+    template_en = """# background knowledge
+$dk
+
+# question
+$question
+"""
 
     def __init__(self, language: str):
         super().__init__(language)

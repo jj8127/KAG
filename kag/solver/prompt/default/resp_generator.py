@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 class RespGenerator(PromptOp):
     template_zh = "基于给定的引用信息回答问题。" \
-                  "\n输出答案，并且给出理由。" \
+                  "\n只输出数字答案" \
                   "\n给定的引用信息：'$memory'\n问题：'$instruction'"
     template_en = "Answer the question based on the given reference." \
-                 "\nGive me the answer and why." \
+                 "\nDirectly output numerical answer. Not output the process info" \
                  "\nThe following are given reference:'$memory'\nQuestion: '$instruction'"
 
     def __init__(self, language: str):

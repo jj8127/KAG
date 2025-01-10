@@ -12,8 +12,7 @@ class RespGenerator(PromptOp):
     template_zh = """
 # task
 基于给定的信息回答问题。
-如果是简单问题，直接说出答案。
-如果是复杂问题，给出简洁的解题过程和中间结果，并以正式的口吻总结答案。
+直接输出数字答案
 如果你无法解答问题，回答：I don't know
 
 # output format
@@ -30,7 +29,25 @@ $question
 
 # your answer
 """
-    template_en = template_zh
+    template_en = """# task
+Answer the question based on the given information.
+Directly output numerical answer. Not output the process info
+If you cannot answer the question, respond with: I don't know
+
+# output format
+Plain text, without including markdown formatting.
+
+# context
+$memory
+
+# domain_knowledge
+$dk
+
+# question
+$question
+
+# your answer
+    """
 
     def __init__(self, language: str):
         super().__init__(language)

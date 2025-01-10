@@ -89,7 +89,82 @@ $error
 
 # output
 """
-    template_en = template_zh
+    template_en = """# Instruction
+Write Python code based on the provided question and data to solve the problem and output the result.  
+To enhance understanding, include intermediate results using `print` statements in the Python code.  
+If the problem cannot be solved or the answer cannot be found, use `print("I don't know")` in the Python code and provide the reason.
+
+# Output Format
+Only output Python code. Do not include any other content.  
+Use Python version 3.8 and include the SymPy symbolic computation library.
+
+# Pay Attention
+The context contains answers to upstream sub-questions that you must incorporate when answering the question.  
+The context is for reference only; do not answer other questions from the context. Focus solely on answering the question provided.
+
+# Domain Knowledge
+$dk
+
+# Examples
+## Example 1
+### Input
+#### Question
+Calculate the interest on ¥47,000 at a rate of 0.015% for a total of 612 days. What is the total amount?
+
+### Output
+```python
+# Initial principal
+principal = 47000
+
+# Interest rate (0.015%)
+rate = 1.5 / 10000
+
+# Number of days
+days = 612
+
+# Calculate annual rate
+annual_rate = rate * 365
+
+# Calculate interest
+interest = principal * (annual_rate / 365) * days
+
+# Output total amount (principal + interest)
+total_amount = principal + interest
+
+print(f"Interest: {interest:.2f}¥")
+print(f"Total amount: {total_amount:.2f}¥")
+```
+## Example 2
+### Input
+#### Question
+Based on the game revenues in 2018 and 2019, calculate the growth rate of game revenue in 2019. Then, using the growth rate, calculate the game revenue for 2020.
+
+### Output
+```python
+# Game revenues for 2018 and 2019 (in ten thousand yuan)
+revenue_2018 = 1300
+revenue_2019 = 1580
+
+# Calculate the growth rate for 2019
+growth_rate = (revenue_2019 - revenue_2018) / revenue_2018
+print(f"The growth rate of revenue in 2019 is: {growth_rate * 100:.2f}%")
+
+# Calculate the projected revenue for 2020 based on the growth rate
+revenue_2020 = revenue_2019 * (1 + growth_rate)
+print(f"The projected revenue for 2020 is: {revenue_2020:.2f} ten thousand yuan")
+```
+# input
+## question
+$question
+
+## context
+$context
+
+## error
+$error
+
+# output
+"""
 
     def __init__(self, language: str):
         super().__init__(language)
