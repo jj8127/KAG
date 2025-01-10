@@ -51,6 +51,7 @@ class PythonCoderAgent(KagBaseModule):
             self.code_prompt,
             with_except=True,
         )
+        python_code = python_code.replace("```", "")
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
             temp_file.write(python_code.encode("utf-8"))
