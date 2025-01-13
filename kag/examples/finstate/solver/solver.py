@@ -43,8 +43,8 @@ def parse_original_string(original_string):
             "instruction": instruction,
             "supply_content": prompt,
             "current_time": left_info[2],
-            "current_question": left_info[4],
-            "answer": ""
+            # "current_question": left_info[4],
+            # "answer": ""
         }
     }
     return json.dumps(structured_data, ensure_ascii=False, indent=2)
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     for index, row in df.iterrows():
         if row['错误分类']!="数值计算错误":
             continue
-        if row["id"] != 603150304:
+        if row["id"] != 603150199:
             continue
         tmp_index += 1
         if tmp_index >= 200:
@@ -76,15 +76,15 @@ if __name__ == "__main__":
         # except:
             # print(f"error: {question}")
             # pass
-        print(response)
+        print(str(history))
         df.at[index, 'kag_output'] = response
         df.at[index, 'history'] = str(history)
         df.at[index, 'json_prompt'] = context
         df.at[index, "sub_question_list"] = str(sub_question_list)
 
         
-    # out_file = "./1224_eval_all_kagout2.xlsx"
-    # df.to_excel(out_file)
+    out_file = "./1224_eval_all_kagout2.xlsx"
+    df.to_excel(out_file)
     
     #question = "阿里巴巴最新的营业收入是多少，哪个部分收入占比最高，占了百分之多少？"
     #question = "阿里国际数字商业集团24年截至9月30日止六个月的收入是多少？它的经营利润率是多少？"
