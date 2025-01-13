@@ -133,7 +133,7 @@ class TableReasoner(KagReasonerABC):
                 sub_answer = None
                 if "Retrieval" == func_str:
                     can_answer, sub_answer = self._get_llm_retrieval(
-                        sub_question, history, context
+                        question = sub_question, node=node, history = history, context = context
                     )
                     # can_answer, sub_answer = self._call_retravel_func(
                     #     question, node, history
@@ -229,15 +229,11 @@ class TableReasoner(KagReasonerABC):
         return sub_question_list
 
     @retry(stop=stop_after_attempt(3))
-    def _get_llm_retrieval(self, question: str, history: SearchTree, context: str):
+    def _get_llm_retrieval(self, question: str,node: SearchTreeNode, history: SearchTree, context: str):
         llm: LLMClient = self.llm_module
-        history_str = None
-        # if history.now_plan is not None:
-        #     history.set_now_plan(None)
-        #     history_str = str(history)
         variables = {
             "question": question,
-            # "history": history_str,
+            # "history": str(history),
             "docs": context,
         }
         sub_answer = llm.invoke(
@@ -245,7 +241,8 @@ class TableReasoner(KagReasonerABC):
             prompt_op=self.llm_retrieval_prompt,
             with_except=True,
         )
-        history.set_now_plan(sub_answer)
+        node.answer = sub_answer
+        # history.set_now_plan(sub_answer)
         return (
             sub_answer is not None and "i don't know" not in sub_answer.lower()
         ), sub_answer
