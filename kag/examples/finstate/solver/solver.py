@@ -34,7 +34,7 @@ def parse_original_string(original_string):
     start_index = original_string.index('[')
     end_index = original_string.rindex(']')
     prompt = original_string[start_index:end_index+1]
-    prompt = prompt.replace(r"\"",r'"').replace("\\\\","\\")
+    prompt = prompt.replace("\\\\","\\").replace(r"\"",r'"')
     prompt = json.loads(prompt)
     instruction = original_string[:start_index].split(r"\n")[0]
     left_info = original_string[end_index+1:].replace(r"\n\n",'\n').split("\n")
@@ -42,7 +42,7 @@ def parse_original_string(original_string):
         "prompt": {
             "instruction": instruction,
             "supply_content": prompt,
-            "current_time": left_info[2],
+            # "current_time": left_info[2],
             # "current_question": left_info[4],
             # "answer": ""
         }
@@ -51,39 +51,41 @@ def parse_original_string(original_string):
 
 if __name__ == "__main__":
     solver = FinStateSolver(KAG_PROJECT_ID=300024)
-    file_pat = "./1224_eval_all.csv"
+    file_pat = "./data/1224_评估详情.xlsx"
 
-    df = pd.read_csv(file_pat)
-    df['json_prompt'] = ''
-    df['kag_output'] = ''
-    df['history'] = ''
-    df["sub_question_list"] = ''
-    tmp_index = 0
+    # 初始化
+    df = pd.read_excel(file_pat, engine='openpyxl')
+    if 'json_prompt' not in df.columns:
+        df['json_prompt'] = ''
+    if 'kag_output' not in df.columns:
+        df['kag_output'] = ''
+    if 'history' not in df.columns:
+        df['history'] = ''
+    if 'sub_question_list' not in df.columns:
+        df["sub_question_list"] = ''
+    
     for index, row in df.iterrows():
-        if row['错误分类']!="数值计算错误":
+        # if row['错误分类']!="数值计算错误":
+        if row['questionType']!="数值计算" or df.notna().loc[index, 'kag_output']:
             continue
-        if row["id"] != 603150199:
-            continue
-        tmp_index += 1
-        if tmp_index >= 200:
-            # continue
-            break
+        # if row["id"] != 603150088:
+        #     continue
+
         question = row['当前问题']
-        context = parse_original_string(row["prompt"])
-        solver.run(TableReasoner.DOMAIN_KNOWLEDGE_INJECTION +  " context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'", context = "")
-        # try:
-        response, history, sub_question_list = solver.run(question, context)
-        # except:
-            # print(f"error: {question}")
-            # pass
-        print(str(history))
+        try:
+            context = parse_original_string(row["prompt"])
+            solver.run(TableReasoner.DOMAIN_KNOWLEDGE_INJECTION +  " context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'", context = "")
+            response, history, sub_question_list = solver.run(question, context)
+        except:
+            print(f"error: {question}")
+            continue
         df.at[index, 'kag_output'] = response
         df.at[index, 'history'] = str(history)
         df.at[index, 'json_prompt'] = context
         df.at[index, "sub_question_list"] = str(sub_question_list)
 
         
-    out_file = "./1224_eval_all_kagout2.xlsx"
+    out_file = "./data/1224_评估详情_kagout1.xlsx"
     df.to_excel(out_file)
     
     #question = "阿里巴巴最新的营业收入是多少，哪个部分收入占比最高，占了百分之多少？"

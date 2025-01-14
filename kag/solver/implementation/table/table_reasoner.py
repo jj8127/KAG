@@ -75,6 +75,7 @@ class TableReasoner(KagReasonerABC):
         self.report_tool: ReporterIntermediateProcessTool = kwargs.get(
             "report_tool", None
         )
+        
 
     def reason(self, question: str, context:str):
         """
