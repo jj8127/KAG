@@ -46,6 +46,10 @@ class TableReasoner(KagReasonerABC):
             self.biz_scene, "llm_retrieval_prompt"
         )(language=self.language)
 
+        self.rewrite_question_prompt = PromptOp.load(
+            self.biz_scene, "rewrite_question"
+        )(language=self.language)
+
         self.logic_form_plan_prompt = PromptOp.load(
             self.biz_scene, "logic_form_plan_table"
         )(language=self.language)
@@ -71,6 +75,7 @@ class TableReasoner(KagReasonerABC):
         self.report_tool: ReporterIntermediateProcessTool = kwargs.get(
             "report_tool", None
         )
+        
 
     def reason(self, question: str, context:str):
         """
@@ -83,12 +88,17 @@ class TableReasoner(KagReasonerABC):
         - history_log: A dictionary containing the history of QA pairs and re-ranked documents.
         """
         history = SearchTree(question, self.dk)
-
         if question.startswith(TableReasoner.DOMAIN_KNOWLEDGE_INJECTION):
             self._save_dk(question, history)
             return "done"
         elif question.startswith(TableReasoner.DOMAIN_KNOWLEDGE_QUERY):
             return self._query_dk_and_report(history)
+        
+        # rewrite question
+        question = self._rewrite_question(history=history, question=question)
+        # 保存重写后的问题
+        history = SearchTree(question, self.dk)
+        print("rewrite question=" + str(question))
 
         # 上报root
         self.report_pipleline(history)
@@ -133,7 +143,7 @@ class TableReasoner(KagReasonerABC):
                 sub_answer = None
                 if "Retrieval" == func_str:
                     can_answer, sub_answer = self._get_llm_retrieval(
-                        sub_question, history, context
+                        question = sub_question, node=node, history = history, context = context
                     )
                     # can_answer, sub_answer = self._call_retravel_func(
                     #     question, node, history
@@ -229,26 +239,39 @@ class TableReasoner(KagReasonerABC):
         return sub_question_list
 
     @retry(stop=stop_after_attempt(3))
-    def _get_llm_retrieval(self, question: str, history: SearchTree, context: str):
+    def _get_llm_retrieval(self, question: str,node: SearchTreeNode, history: SearchTree, context: str):
         llm: LLMClient = self.llm_module
-        history_str = None
-        # if history.now_plan is not None:
-        #     history.set_now_plan(None)
-        #     history_str = str(history)
         variables = {
             "question": question,
-            # "history": history_str,
+            # "history": str(history),
             "docs": context,
+            "dk": history.dk,
         }
         sub_answer = llm.invoke(
             variables=variables,
             prompt_op=self.llm_retrieval_prompt,
             with_except=True,
         )
-        history.set_now_plan(sub_answer)
+        node.answer = sub_answer
+        # history.set_now_plan(sub_answer)
         return (
             sub_answer is not None and "i don't know" not in sub_answer.lower()
         ), sub_answer
+    
+    @retry(stop=stop_after_attempt(3))
+    def _rewrite_question(self, history: SearchTree, question: str):
+        llm: LLMClient = self.llm_module
+        variables = {
+            "question": question,
+        }
+        new_question = llm.invoke(
+            variables=variables,
+            prompt_op=self.rewrite_question_prompt,
+            with_except=True,
+        )
+        # node.answer = sub_answer
+        # history.set_now_plan(sub_answer)
+        return new_question
     
     def _call_spo_retravel_func(self, query):
         lf_planner = SPOLFPlanner(
