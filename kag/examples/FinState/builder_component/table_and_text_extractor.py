@@ -113,6 +113,7 @@ class TableAndTextExtractor(ExtractorABC):
             return self._invoke_table(input, **kwargs)
         return self.schema_free_extractor._invoke(input, **kwargs)
 
+    @retry(stop=stop_after_attempt(3))
     def _invoke_table(self, input: Chunk, **kwargs) -> List[Output]:
         try:
             input.id = generate_hash_id(input.content)
@@ -421,7 +422,7 @@ class TableAndTextExtractor(ExtractorABC):
             )
             rows[idx] = (str(row_name).lstrip("-").strip(), node.id)
             row_level = 0
-            for c in row_name:
+            for c in str(row_name):
                 if c != "-":
                     break
                 else:
