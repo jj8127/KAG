@@ -33,5 +33,5 @@ class AnswerReasoner(KagReasonerABC):
             self.answer_judge_prompt,
             with_json_parse=True,
         )
-        return judge_result['答案类别'], judge_result['理由']
+        return judge_result
         
