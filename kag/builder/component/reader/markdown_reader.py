@@ -322,7 +322,7 @@ class MarkDownReader(ReaderABC):
                         content=table_content,
                         type=ChunkTypeEnum.Table,
                         metadata={
-                            "table_data": table,
+                            "table_data": str(table),
                             "before_text": table.get("context", {}).get("before_text", ""),
                             "after_text": table.get("context", {}).get("after_text", "")
                         }
@@ -341,7 +341,7 @@ class MarkDownReader(ReaderABC):
                         content=table_content,
                         type=ChunkTypeEnum.Table,
                         metadata={
-                            "table_data": table,
+                            "table_data": str(table),
                             "before_text": table.get("context", {}).get("before_text", ""),
                             "after_text": table.get("context", {}).get("after_text", "")
                         }
@@ -394,7 +394,7 @@ class MarkDownReader(ReaderABC):
                             content=table_content,
                             type=ChunkTypeEnum.Table,
                             metadata={
-                                "table_data": table,
+                                "table_data": str(table),
                                 "before_text": table.get("context", {}).get("before_text", ""),
                                 "after_text": table.get("context", {}).get("after_text", "")
                             }
@@ -413,7 +413,7 @@ class MarkDownReader(ReaderABC):
                             content=table_content,
                             type=ChunkTypeEnum.Table,
                             metadata={
-                                "table_data": table,
+                                "table_data": str(table),
                                 "before_text": table.get("context", {}).get("before_text", ""),
                                 "after_text": table.get("context", {}).get("after_text", "")
                             }

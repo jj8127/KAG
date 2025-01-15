@@ -253,6 +253,9 @@ class TableAndTextExtractor(ExtractorABC):
             table_info = input_table.kwargs.pop("table_info")
         else:
             table_info = {}
+
+        if not table_info:
+            return rst
         if "header" in table_info and "index_col" in table_info:
             header = table_info["header"]
             index_col = table_info["index_col"]
@@ -409,14 +412,14 @@ class TableAndTextExtractor(ExtractorABC):
         for row_name, row_value in table_df.iterrows():
             node = Node(
                 _id=f"{table_id}-row-{idx}",
-                name=f"{table_name}-{row_name.lstrip('-').strip()}",
+                name=f"{table_name}-{str(row_name).lstrip('-').strip()}",
                 label="TableRow",
                 properties={
-                    "raw_name": row_name.lstrip("-").strip(),
+                    "raw_name": str(row_name).lstrip("-").strip(),
                     "content": row_value.to_csv(),
                 },
             )
-            rows[idx] = (row_name.lstrip("-").strip(), node.id)
+            rows[idx] = (str(row_name).lstrip("-").strip(), node.id)
             row_level = 0
             for c in row_name:
                 if c != "-":
@@ -598,12 +601,12 @@ class TableAndTextExtractor(ExtractorABC):
             edges.append(edge)
 
         subgraph = SubGraph(nodes=nodes, edges=edges)
-        print("*" * 80)
-        print(
-            f"done process {table_df.shape} table to subgraph with {len(nodes)} nodes and {len(edges)} edges"
-        )
-        print(f"node stat: {self.stat(nodes)}")
-        print(f"edge stat: {self.stat(edges)}")
+        # print("*" * 80)
+        # print(
+        #     f"done process {table_df.shape} table to subgraph with {len(nodes)} nodes and {len(edges)} edges"
+        # )
+        # print(f"node stat: {self.stat(nodes)}")
+        # print(f"edge stat: {self.stat(edges)}")
         return [subgraph]
 
     def stat(self, items):
