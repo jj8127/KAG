@@ -84,8 +84,8 @@ def parallelQaAndEvaluate(file_path, output_path, threadNum = 4, upperLimit = 5)
         print(f"input data:{data}")
         sample_idx, sample = data
         question, context, index = sample
-        # solver = FinStateSolver(KAG_PROJECT_ID=300024)
-        solver = FinStateSolver(KAG_PROJECT_ID=1)
+        solver = FinStateSolver(KAG_PROJECT_ID=300024)
+        # solver = FinStateSolver(KAG_PROJECT_ID=1)
         # try:
         solver.run(TableReasoner.DOMAIN_KNOWLEDGE_INJECTION +  " context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'", context = "")
         response, history, sub_question_list = solver.run(question, context)
@@ -122,5 +122,5 @@ def parallelQaAndEvaluate(file_path, output_path, threadNum = 4, upperLimit = 5)
 
 if __name__ == "__main__":
     file_path = "./data/1224评估详情.xlsx"
-    output_path = "./data/1224评估详情_test.xlsx"
-    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, threadNum=4, upperLimit=300)
+    output_path = "./data/1224评估详情_kagout4.xlsx"
+    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, threadNum=10, upperLimit=300)
