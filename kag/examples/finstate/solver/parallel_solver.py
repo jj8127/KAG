@@ -61,6 +61,7 @@ def loadDataFromCsv(file_path):
         dataframe['history'] = ''
     if 'sub_question_list' not in dataframe.columns:
         dataframe["sub_question_list"] = ''
+    dataframe['kag_output'] = dataframe['kag_output'].astype('object')
     inputList = []
     for index, row in dataframe.iterrows():
         if row['questionType'] != "数值计算":
