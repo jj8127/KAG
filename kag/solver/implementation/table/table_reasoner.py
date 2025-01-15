@@ -95,10 +95,10 @@ class TableReasoner(KagReasonerABC):
             return self._query_dk_and_report(history)
         
         # rewrite question
-        question = self._rewrite_question(history=history, question=question)
+        # question = self._rewrite_question(history=history, question=question)
         # 保存重写后的问题
-        history = SearchTree(question, self.dk)
-        print("rewrite question=" + str(question))
+        # history = SearchTree(question, self.dk)
+        # print("rewrite question=" + str(question))
 
         # 上报root
         self.report_pipleline(history)
@@ -123,9 +123,9 @@ class TableReasoner(KagReasonerABC):
 
             for sub_question in sub_question_list:
                 sub_q_str = sub_question["sub_question"]
-                # new_sub_q_str = self._rewrite_sub_question(history=history, subquestion=sub_q_str)
-                # print(f"rewrite_sub_question, from={sub_q_str}, to={new_sub_q_str}")
-                # sub_q_str = new_sub_q_str
+                new_sub_q_str = self._rewrite_sub_question(history=history, subquestion=sub_q_str)
+                print(f"rewrite_sub_question, from={sub_q_str}, to={new_sub_q_str}")
+                sub_q_str = new_sub_q_str
                 func_str = sub_question["process_function"]
 
                 node = SearchTreeNode(sub_q_str, func_str)
@@ -272,6 +272,23 @@ class TableReasoner(KagReasonerABC):
         # node.answer = sub_answer
         # history.set_now_plan(sub_answer)
         return new_question
+    
+    @retry(stop=stop_after_attempt(3))
+    def _rewrite_sub_question(self, history: SearchTree, subquestion: str):
+        llm: LLMClient = self.llm_module
+        variables = {
+            "question": subquestion,
+            "history": str(history),
+            "dk": history.dk,
+        }
+        new_sub_question = llm.invoke(
+            variables=variables,
+            prompt_op=self.rewrite_subquestion,
+            with_except=True,
+        )
+        # node.answer = sub_answer
+        # history.set_now_plan(sub_answer)
+        return new_sub_question
     
     def _call_spo_retravel_func(self, query):
         lf_planner = SPOLFPlanner(
