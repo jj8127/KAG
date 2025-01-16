@@ -81,16 +81,16 @@ def loadDataFromCsv(file_path):
 
     return dataframe, inputList
 
-def parallelQaAndEvaluate(file_path, output_path, sft_path = None, threadNum = 4, upperLimit = 5):
+def parallelQaAndEvaluate(file_path, output_path, sft_path = None, threadNum = 4, upperLimit = 5, domain_konwledge = ''):
 
     def do_reasone_task(data):
-        print(f"input data:{data}")
+        # print(f"input data:{data}")
         sample_idx, sample = data
         question, context, index, label_answer = sample
         solver = FinStateSolver(KAG_PROJECT_ID=300024)
         # solver = FinStateSolver(KAG_PROJECT_ID=1)
         # try:
-        solver.run(TableReasoner.DOMAIN_KNOWLEDGE_INJECTION +  " context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'", context = "")
+        solver.run(TableReasoner.DOMAIN_KNOWLEDGE_INJECTION +  domain_konwledge, context = "")
         response, history, sub_question_list, retrieval_context, codes = solver.run(question, context)
         # except:
             # print(f"error: {question}")
@@ -132,7 +132,11 @@ def parallelQaAndEvaluate(file_path, output_path, sft_path = None, threadNum = 4
         sft_df.to_excel(sft_path, index=False)
 
 if __name__ == "__main__":
+    domain_konwledge = """1、context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'
+2、货币基金的收益计算方式为：产品收益=买入金额*约定年化收益率*计息天数/365
+3、金融领域百二通常指2%
+"""
     file_path = "./data/1224评估详情.xlsx"
     output_path = "./data/1224评估详情_kagout1_withcode.xlsx"
     # sft_path = './data/1224评估详情_sftdata.xlsx'
-    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, sft_path= None, threadNum=10, upperLimit=300)
+    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, sft_path= None, threadNum=10, upperLimit=300, domain_konwledge = domain_konwledge)
