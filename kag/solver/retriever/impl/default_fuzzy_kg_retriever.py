@@ -122,7 +122,7 @@ class FuzzyMatchRetrieval:
             spo_retrieved.append([spo, spo_p_name])
         return spo_retrieved
 
-    def match_spo(self, n: GetSPONode, one_hop_graph_list: List[OneHopGraphData]):
+    def match_spo(self, n: GetSPONode, one_hop_graph_list: List[OneHopGraphData], enable_attr=True, rank_num = 5):
         one_kg_graph = KgGraph()
         # sort graph
         unstd_p_text = self.get_unstd_p_text(n)
@@ -135,15 +135,16 @@ class FuzzyMatchRetrieval:
                     all_spo_text.append(v)
                     revert_value_p_map[v] = k
                     revert_graph_map[v] = one_hop_graph
-            for k, v_set in one_hop_graph.get_s_all_attribute_spo().items():
-                for v in v_set:
-                    attr_txt = f"{one_hop_graph.s.get_short_name()} {k} {v}"
-                    all_spo_text.append(attr_txt)
-                    revert_value_p_map[attr_txt] = k
-                    revert_graph_map[attr_txt] = one_hop_graph
+            if enable_attr:
+                for k, v_set in one_hop_graph.get_s_all_attribute_spo().items():
+                    for v in v_set:
+                        attr_txt = f"{one_hop_graph.s.get_short_name()} {k} {v}"
+                        all_spo_text.append(attr_txt)
+                        revert_value_p_map[attr_txt] = k
+                        revert_graph_map[attr_txt] = one_hop_graph
         start_time = time.time()
         tok5_res = self.text_similarity.text_sim_result(
-            n.sub_query, all_spo_text, 5, low_score=0.3
+            n.sub_query, all_spo_text, rank_num, low_score=0.3
         )
         logger.debug(
             f" _get_spo_value_in_one_hop_graph_set text similarity cost={time.time() - start_time}"

@@ -211,6 +211,8 @@ class TableRetrievalAgent(ChunkRetriever):
             total_one_kg_graph = self.fuzzy_match.match_spo(
                 n=n,
                 one_hop_graph_list=onehop_graph_list,
+                enable_attr=False,
+                rank_num=50
             )
             if not total_one_kg_graph or len(total_one_kg_graph.edge_map) <= 0:
                 # 没有合理的数据
