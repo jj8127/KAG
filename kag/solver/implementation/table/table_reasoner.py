@@ -23,6 +23,7 @@ from kag.solver.prompt.table.rewrite_sub_question import RewriteSubQuestionPromp
 from knext.reasoner.rest.models.data_edge import DataEdge
 from knext.reasoner.rest.models.data_node import DataNode
 from knext.reasoner.rest.models.sub_graph import SubGraph
+from kag.solver.implementation.table.table_common import _convert_lf_res_to_report_format
 
 logger = logging.getLogger()
 

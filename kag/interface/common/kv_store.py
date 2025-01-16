@@ -1,5 +1,10 @@
 import os
-import sqlite3
+
+have_sql_lite = True
+try:
+    import sqlite3
+except:
+    have_sql_lite = False
 import threading
 import pickle
 import base64
@@ -18,6 +23,9 @@ def init_db(db_name):
 
 class KVStore:
     def __init__(self, db_name):
+        if not have_sql_lite:
+            self.disable = True
+            return
         self.db_name = db_name
         if not os.path.exists(db_name):
             init_db(db_name=db_name)
@@ -30,6 +38,8 @@ class KVStore:
         self.disable = False
 
     def __del__(self):
+        if self.disable:
+            return
         self.conn.close()
 
     def set_value(self, key, value):
