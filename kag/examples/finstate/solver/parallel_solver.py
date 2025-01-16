@@ -53,7 +53,7 @@ def parse_original_string(original_string):
 
 def loadDataFromCsv(file_path):
     # 对特定case打印code
-    special_case_id = [603150032, 603150384, 603150085, 603150026, 603150040, 603149931, 603150230, 603150181, 603150296]
+    special_case_id = [603150384, 603150085, 603150199, 603150026, 603149931, 603150273, 603150230, 603150181, 603150296]
 
     # dataframe = pd.read_csv(file_path)
     dataframe = pd.read_excel(file_path, engine='openpyxl')
