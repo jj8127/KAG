@@ -4,7 +4,10 @@ import time
 from typing import List
 import json
 import os
+from io import StringIO
 import copy
+import pandas as pd
+import markdown
 
 from kag.solver.logic.core_modules.common.schema_utils import SchemaUtils
 from kag.solver.logic.core_modules.common.utils import generate_random_string
@@ -42,6 +45,7 @@ from kag.solver.prompt.table.select_graph import SelectGraphPrompt
 from kag.solver.prompt.table.retravel_gen_symbol import RetrivalGenerateSymbolPrompt
 from kag.solver.logic.core_modules.common.text_sim_by_vector import TextSimilarity
 from kag.common.conf import KAG_CONFIG
+from kag.solver.implementation.table.table_common import convert_lf_res_to_report_format
 
 
 @ChunkRetriever.register("table_retriever")
@@ -52,7 +56,7 @@ class TableRetrievalAgent(ChunkRetriever):
         self.question = question
         self.dk = dk
         self.schema_util = SchemaUtils(LogicFormConfiguration(kwargs))
-        self.chunk_retriever = KAGRetriever(**kwargs)
+        self.chunk_retriever: KAGRetriever = KAGRetriever(**kwargs)
         self.reason: ReasonerClient = ReasonerClient(self.host_addr, self.project_id)
 
         if self.host_addr and self.project_id:
@@ -137,12 +141,7 @@ class TableRetrievalAgent(ChunkRetriever):
             with_except=True,
         )
 
-    def symbol_solver(self, history: SearchTree):
-        """
-        符号求解
-        """
-        # 根据问题，搜索10张表
-        start_time = time.time()
+    def retrieval_table_info(self):
         s_nodes = self.chunk_retriever._search_nodes_by_vector(
             self.question, "Table", threshold=0.5, topk=5
         )
@@ -169,8 +168,40 @@ class TableRetrievalAgent(ChunkRetriever):
                     "content": node["node"].get("content", ""),
                     "score": node["score"],
                 }
+        # return str(list(s_table_info.keys()))
+        for table_name, value_dict in s_table_info.items():
+            s_table_info[table_name] = self.get_row_and_column_from_content(
+                value_dict["content"]
+            )
+        rst_str = ""
+        for table_name, table_desc in s_table_info.items():
+            rst_str += f"### {table_name}\n{table_desc}\n"
+        return rst_str
 
-        table_name_list = list(s_table_info.keys())
+    def get_row_and_column_from_content(self, content: str):
+        """
+        从markdown中获取行列关键字
+        """
+        try:
+            html_content = markdown.markdown(
+                content, extensions=["markdown.extensions.tables"]
+            )
+            table_df = pd.read_html(StringIO(html_content), header=[0], index_col=[0])[
+                0
+            ]
+            # return f"rows={str(table_df.index.to_list())}\ncolumns={str(table_df.columns.to_list())}"
+            if len(table_df.index.to_list()) < 20:
+                return f"rows={str(table_df.index.to_list())}"
+            return ""
+        except:
+            return ""
+
+    def symbol_solver(self, history: SearchTree):
+        """
+        符号求解
+        """
+        # 根据问题，搜索10张表
+        table_info_str = self.retrieval_table_info()
         # table_name_list = [
         #     f"表名：{t['node']['name']}\n{t['node']['content']}" for t in s_nodes
         # ]
@@ -179,7 +210,7 @@ class TableRetrievalAgent(ChunkRetriever):
         get_spo_list = self.llm.invoke(
             {
                 "input": self.question,
-                "table_names": "\n".join([str(d) for d in table_name_list]),
+                "table_names": table_info_str,
                 "dk": self.dk,
             },
             self.retravel_gen_symbol,
@@ -191,6 +222,10 @@ class TableRetrievalAgent(ChunkRetriever):
             "table_symbol_retrival,get_spo_list="
             + json.dumps(get_spo_list, ensure_ascii=False)
         )
+
+        if "i don't know" in str(get_spo_list).lower():
+            answer = str(get_spo_list)
+            return self.can_answer(answer), answer, ""
 
         # 在图上查询
         last_var = None
@@ -244,24 +279,28 @@ class TableRetrievalAgent(ChunkRetriever):
             with_except=True,
         )
 
-        # # 转换graph为可以页面可展示的格式
-        # sub_logic_nodes_str = self._get_spo_list_to_str(get_spo_list)
-        # context = [
-        #     "## SPO Retriever",
-        #     "#### logic_form expression: ",
-        #     f"```java\n{sub_logic_nodes_str}\n```",
-        # ]
-        # cur_content, sub_graph = convert_lf_res_to_report_format(
-        #     None, f"graph_{generate_random_string(3)}", 0, [], kg_graph_deep_copy
-        # )
-        # if cur_content:
-        #     context += cur_content
-        # else:
-        #     context += [graph_docs]
-        # history_log = {"report_info": {"context": context, "sub_graph": [sub_graph] if sub_graph else None}}
+        # 转换graph为可以页面可展示的格式
+        sub_logic_nodes_str = self._get_spo_list_to_str(get_spo_list)
+        context = [
+            "## SPO Retriever",
+            "#### logic_form expression: ",
+            f"```java\n{sub_logic_nodes_str}\n```",
+        ]
+        cur_content, sub_graph = convert_lf_res_to_report_format(
+            None, f"graph_{generate_random_string(3)}", [], kg_graph_deep_copy
+        )
+        if cur_content:
+            context += cur_content
+        else:
+            context += [graph_docs]
+        history_log = {
+            "report_info": {
+                "context": context,
+                "sub_graph": [sub_graph] if sub_graph else None,
+            }
+        }
 
-        # return self.can_answer(answer), answer, [history_log]
-        return self.can_answer(answer), answer, ""
+        return self.can_answer(answer), answer, [history_log]
 
     def can_answer(self, answer):
         if not answer:

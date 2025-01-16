@@ -12,20 +12,19 @@ logger = logging.getLogger(__name__)
 class RetrivalGenerateSymbolPrompt(PromptABC):
     template_zh = """
 # Task
-根据给出的问题，结合schema信息，生成图数据查询过程。
+根据给出的问题，结合schema信息，生成数据查询过程。
 
 # Instruction
-根据要查询的数据，先确定数据所在的Table，可以一次查询多张Table的数据。
-从Table出发，查找数据所在的TableRow或TableColumn，最后找到TableCell值。
-如果可能有多重查询路径，全部输出出来。
-如果需要查询TableRow之间的上下位关系，使用subitem关系。
-如果无法回答，返回: I don't know.
+根据要查询的数据，选择数据所在的Table，允许多张Table。
+从Table出发，查找数据所在的TableRow或TableColumn。
+根据问题，通过subitem查找子项目，或者查找数据所在的TableCell。
+如果无法回答，返回: {"answer": "I don't know", "reason": "the reason"}
 
 # output format
-输出json格式，内容是路径查询列表，每个路径包含desc，以及需要查询的三元组spo。
+输出json格式，内容是路径查询列表，每个路径包含desc，以及需要查询的spo三元组。
 spo中必须包含var（变量名），type（实体或关系类型），link（目标实体或关系的名称，在图数据上进行链指）
 
-# Schema and data example
+# 表格Schema信息
 ```json
 {
   "entities": [
@@ -71,72 +70,12 @@ spo中必须包含var（变量名），type（实体或关系类型），link（
         {"p": "keyword", "s": "TableKeyword", "o": "TableColumn"}
       ]
     }
-  ],
-  "data_examples": [
-    {
-      "s": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表", "type": "Table"},
-      "p": "containRow",
-      "o": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表-淘天集团", "type": "TableRow"}
-    },
-    {
-      "s": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表", "type": "Table"},
-      "p": "containRow",
-      "o": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表-中国零售商业", "type": "TableRow"}
-    },
-    {
-      "s": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表-淘天集团", "type": "TableRow"},
-      "p": "subitem",
-      "o": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表-中国零售商业", "type": "TableRow"}
-    },
-    {
-      "s": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表", "type": "Table"},
-      "p": "containColumn",
-      "o": {
-        "id"  : "阿里巴巴2025财年上半年财报-营业收入明细表-截至9月30日止6个月-2024-人民币",
-        "type": "TableColumn"
-      }
-    },
-    {
-      "s": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表-淘天集团", "type": "TableRow"},
-      "p": "containCell",
-      "o": {
-        "id"   : "阿里巴巴2025财年上半年财报-营业收入明细表-淘天集团-截至9月30日止6个月-2023-人民币",
-        "type" : "TableCell"                                        ,
-        "value": "212,607"                                          ,
-        "scale": "百万"                                               ,
-        "unit" : "人民币"
-      }
-    },
-    {
-      "s": {
-        "id"   : "阿里巴巴2025财年上半年财报-营业收入明细表-淘天集团-截至9月30日止6个月-2023-人民币",
-        "type" : "TableCell"                                        ,
-        "value": "212,607"                                          ,
-        "scale": "百万"                                               ,
-        "unit" : "人民币"
-      },
-      "p": "partOfTableRow",
-      "o": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表-中国零售商业", "type": "TableRow"}
-    },
-    {
-      "s": {"id": "阿里巴巴", "type": "TableKeyword"},
-      "p": "keyword",
-      "o": {"id": "阿里巴巴2025财年上半年财报-营业收入明细表", "type": "Table"}
-    },
-    {
-      "s": {"id": "人民币", "type": "TableKeyword"},
-      "p": "keyword",
-      "o": {
-        "id"  : "阿里巴巴2025财年上半年财报-营业收入明细表-截至9月30日止6个月-2023-人民币",
-        "type": "TableColumn"
-      }
-    }
   ]
 }
 ```
 
 # Examples
-## 查具体数值
+## 查询表格某一个格子的数据
 ### input
 查找阿里巴巴2024年截至9月30日6个月的收入是多少？
 ### output
@@ -240,11 +179,11 @@ spo中必须包含var（变量名），type（实体或关系类型），link（
 ]
 ```
 
-# real input
-$input
-
 # tables we have
 $table_names
+
+# real input
+$input
 
 # your output
 """

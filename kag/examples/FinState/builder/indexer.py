@@ -33,11 +33,12 @@ def buildKB(file_path):
 
 
 if __name__ == "__main__":
+    exit(0)
     clear_neo4j_data("finstate")
     import_modules_from_path(
         os.path.join(os.path.abspath(os.path.dirname(__file__)), "../builder_component")
     )
     dir_path = os.path.dirname(__file__)
-    file_path = os.path.join(dir_path, "data/阿里巴巴2025财年度中期报告-1.md")
+    file_path = os.path.join(dir_path, "data/阿里巴巴2025财年度中期报告.md")
 
     buildKB(file_path)

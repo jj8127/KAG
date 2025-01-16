@@ -17,6 +17,8 @@ import traceback
 from tenacity import retry, stop_after_attempt
 from kag.interface import PromptABC
 from kag.common.registry import Registrable
+from kag.interface.common.kv_store import KVStore
+import hashlib
 
 
 logger = logging.getLogger(__name__)
@@ -28,6 +30,10 @@ class LLMClient(Registrable):
 
     This class includes methods to call the model with a prompt, parse the response, and handle batch processing of prompts.
     """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.kv_store = KVStore("/tmp/llm_cache")
 
     @retry(stop=stop_after_attempt(3))
     def __call__(self, prompt: Union[str, dict, list]) -> str:
@@ -72,6 +78,14 @@ class LLMClient(Registrable):
             return res
         return json_result
 
+    def _get_message_key(self, prompt, image_url):
+        str_id = prompt + str(image_url)
+        hash_object = hashlib.sha256(str_id.encode())
+        json_str2 = str_id + "_add_some_salt"
+        hash_object2 = hashlib.sha256(json_str2.encode())
+        message_key = hash_object.hexdigest() + hash_object2.hexdigest()
+        return message_key
+
     def invoke(
         self,
         variables: Dict[str, Any],
@@ -98,6 +112,10 @@ class LLMClient(Registrable):
             return result
         response = ""
         try:
+            msg_key = self._get_message_key(prompt=json.dumps(prompt,sort_keys=True), image_url="")
+            cache_data = self.kv_store.get_value(msg_key)
+            if cache_data is not None:
+                return cache_data
             response = (
                 self.call_with_json_parse(prompt=prompt)
                 if with_json_parse
@@ -115,6 +133,7 @@ class LLMClient(Registrable):
                 raise RuntimeError(
                     f"LLM invoke exception, info: {e}\nllm input: {input}\nllm output: {response}"
                 )
+        self.kv_store.set_value(msg_key, result)
         return result
 
     def batch(

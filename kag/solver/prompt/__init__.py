@@ -27,6 +27,7 @@ from kag.solver.prompt.default.solve_question_without_docs import (
 )
 from kag.solver.prompt.default.solve_question_without_spo import SolveQuestionWithOutSPO
 from kag.solver.prompt.default.spo_retrieval import SpoRetrieval
+from kag.solver.prompt.table.spo_retrieval import TableSpoRetrieval
 
 __all__ = [
     "DeduceChoice",
@@ -44,4 +45,5 @@ __all__ = [
     "SolveQuestionWithOutDocs",
     "SolveQuestionWithOutSPO",
     "SpoRetrieval",
+    "TableSpoRetrieval",
 ]
