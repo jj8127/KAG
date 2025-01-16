@@ -155,6 +155,9 @@ class DefaultUnstructuredBuilderChain(KAGBuilderChain):
                 if node is None:
                     continue
                 flow_data = execute_node(node, flow_data, key=input_key)
+
+            if not flow_data:
+                return None
             return {input_key: flow_data[0]}
 
         reader_output = self.reader.invoke(input_data, key=generate_hash_id(input_data))
