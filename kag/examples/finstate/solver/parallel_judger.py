@@ -33,6 +33,7 @@ def loadDataFromCsv(file_path):
         question = row['当前问题']
         label_answer = row['labelAnswer']
         out_answer = row['kag_output']
+        # out_answer = row['answer']
         inputList.append((question, label_answer, out_answer,row['llm_judge'], index))
 
     return dataframe, inputList
@@ -78,6 +79,6 @@ def parallelQaAndEvaluate(file_path, output_path, threadNum = 4, upperLimit = 5)
     df.to_excel(output_path)
 
 if __name__ == "__main__":
-    file_path = "./data/1224评估详情_kagout4.xlsx"
-    output_path = "./data/1224评估详情_kagout4_judge.xlsx"
+    file_path = "./data/1224评估详情_kagout2.xlsx"
+    output_path = "./data/1224评估详情_kagout2_judge2.xlsx"
     parallelQaAndEvaluate(file_path = file_path, output_path = output_path, threadNum=10, upperLimit=300)

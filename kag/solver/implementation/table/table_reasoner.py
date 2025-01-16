@@ -107,6 +107,8 @@ class TableReasoner(KagReasonerABC):
         # kg_content = "阿里巴巴2025财年年度中期报告"
         # TODO
         kg_content = ""
+        retrieval_context = ""
+        codes = ''
 
         try_times = 3
         while try_times > 0:
@@ -123,9 +125,9 @@ class TableReasoner(KagReasonerABC):
 
             for sub_question in sub_question_list:
                 sub_q_str = sub_question["sub_question"]
-                new_sub_q_str = self._rewrite_sub_question(history=history, subquestion=sub_q_str)
-                print(f"rewrite_sub_question, from={sub_q_str}, to={new_sub_q_str}")
-                sub_q_str = new_sub_q_str
+                # new_sub_q_str = self._rewrite_sub_question(history=history, subquestion=sub_q_str)
+                # print(f"rewrite_sub_question, from={sub_q_str}, to={new_sub_q_str}")
+                # sub_q_str = new_sub_q_str
                 func_str = sub_question["process_function"]
 
                 node = SearchTreeNode(sub_q_str, func_str)
@@ -148,11 +150,12 @@ class TableReasoner(KagReasonerABC):
                     # can_answer, sub_answer = self._call_retravel_func(
                     #     question, node, history
                     # )
-
+                    retrieval_context += sub_answer +'\n'
                 elif "PythonCoder" == func_str:
-                    can_answer, sub_answer = self._call_python_coder_func(
+                    can_answer, sub_answer, code = self._call_python_coder_func(
                         init_question=question, node=node, history=history, context=context
                     )
+                    codes+=code+'###end####\n\n'
                 else:
                     raise RuntimeError(f"unsupported agent {func_str}")
 
@@ -215,7 +218,7 @@ class TableReasoner(KagReasonerABC):
             )
             history.root_node.answer = final_answer
         # self.report_pipleline(history, final_answer, final_answer_form_llm)
-        return final_answer, history, sub_question_list
+        return final_answer, history, sub_question_list, retrieval_context, codes
 
     @retry(stop=stop_after_attempt(3))
     def _get_sub_question_list(self, history: SearchTree, kg_content: str):
@@ -411,7 +414,7 @@ class TableReasoner(KagReasonerABC):
         node.answer_desc = self._process_coder_desc(code)
         return (
             sub_answer is not None and "i don't know" not in sub_answer.lower()
-        ), sub_answer
+        ), sub_answer, code
 
     def _process_coder_desc(self, coder_desc: str):
         # 拆分文本为行
