@@ -21,7 +21,8 @@ from kag.interface import VectorizerABC, VectorizeModelABC
 from knext.schema.client import SchemaClient
 from knext.schema.model.base import IndexTypeEnum
 from knext.common.base.runnable import Input, Output
-
+import logging
+logger = logging.getLogger(__name__)
 
 class EmbeddingVectorPlaceholder(object):
     def __init__(self, number, properties, vector_field, property_key, property_value):
@@ -52,8 +53,7 @@ class EmbeddingVectorManager(object):
             if not property_value:
                 return None
             if not isinstance(property_value, str):
-                message = f"property {property_key!r} must be string to generate embedding vector, got {property_value} with type {type(property_value)}"
-                raise RuntimeError(message)
+                property_value = str(property_value)
             num = len(self._placeholders)
             placeholder = EmbeddingVectorPlaceholder(
                 num, properties, vector_field, property_key, property_value

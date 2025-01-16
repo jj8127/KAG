@@ -120,7 +120,12 @@ class TableAndTextExtractor(ExtractorABC):
             self._table_classify(input)
             return self._table_extractor(input)
         except:
-            logger.exception("extractor table error")
+            logger.warning(f"_invoke_table failed for chunk:{input}")
+            raise RuntimeError(
+                f"table extract failed for chunk:{input}"
+            )
+
+        logger.error(f"_invoke_table failed for chunk, return None:{input}")
         return []
 
     def _table_extractor(self, input: Chunk):
