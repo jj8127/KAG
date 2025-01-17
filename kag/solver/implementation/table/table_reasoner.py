@@ -196,7 +196,7 @@ class TableReasoner(KagReasonerABC):
             # 总结答案
             final_answer = llm.invoke(
                 {
-                    "memory": str(history),
+                    "memory": str(history)+codes,
                     "question": history.root_node.question,
                     "dk": history.dk,
                 },
@@ -209,7 +209,7 @@ class TableReasoner(KagReasonerABC):
             final_answer_form_llm = False
             final_answer = llm.invoke(
                 {
-                    "memory": str(history),
+                    "memory": str(history)+codes,
                     "question": history.root_node.question,
                     "dk": history.dk,
                 },
