@@ -54,7 +54,6 @@ def parse_original_string(original_string):
 def loadDataFromCsv(file_path):
     # 对特定case打印code
     special_case_id = [603150384, 603150085, 603150199, 603150026, 603149931, 603150273, 603150230, 603150181, 603150296]
-
     # dataframe = pd.read_csv(file_path)
     dataframe = pd.read_excel(file_path, engine='openpyxl')
     if 'json_prompt' not in dataframe.columns:
@@ -133,10 +132,11 @@ def parallelQaAndEvaluate(file_path, output_path, sft_path = None, threadNum = 4
 
 if __name__ == "__main__":
     domain_konwledge = r"""1、context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'
-2、货币基金的收益计算方式为：产品收益=买入金额*约定年化收益率*计息天数/365
-3、理财产品的复利收益计算公式为：\[ \text{最终收益} = \text{初始投资金额} \times (1 + \text{年利率}/n)^{n \times \text{投资年限}} - \text{初始投资金额} \]
+2、货币基金的收益计算方式为：产品收益=买入金额*约定年化收益率*计息天数/365，余额宝是货币基金的一种。
+3、理财产品的收益需要计算复利，计算公式为：最终收益 = 初始投资金额 * (1 + 日收益率)^{投资天数} - 初始投资金额，日收益率 = (1 + 年收益率)^{1/365} - 1
 4、金融领域百二通常指2%
-5、申购只需支出申购费
+5、申购只需支出申购费，销售服务费率是指基金在销售过程中收取的服务费用占基金资产的比例。它通常用于支付销售和分销基金的相关成本，比如广告、营销和分销渠道的维护等。销售服务费率通常按年计算，并从基金资产中扣除。申购费是投资者在购买基金份额时支付的费用，通常是一次性的。这笔费用通常按购买金额的一定比例计算，用于补偿基金公司和销售机构的发行和销售成本。
+6、派息份额指的是将投资产品的红利或股息再投资以获得额外份额。计算时，首先确定总派息金额，然后根据派息时的单位净值（价格）计算再投资能获得的额外份额，最后将这些新获得的份额加到原有份额中，更新总持有份额。
 """
     file_path = "./data/1224评估详情.xlsx"
     output_path = "./data/1224评估详情_kagout1_withcode.xlsx"
