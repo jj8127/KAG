@@ -83,6 +83,7 @@ class LogicFormPlanPrompt(PromptOp):
       ]
     }
   ],
+  "domain_knowledge": "$dk",
   "input": "$input",
   "failed_cases": "$history"
 }

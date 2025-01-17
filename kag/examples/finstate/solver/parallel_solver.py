@@ -132,9 +132,11 @@ def parallelQaAndEvaluate(file_path, output_path, sft_path = None, threadNum = 4
         sft_df.to_excel(sft_path, index=False)
 
 if __name__ == "__main__":
-    domain_konwledge = """1、context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'
+    domain_konwledge = r"""1、context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'
 2、货币基金的收益计算方式为：产品收益=买入金额*约定年化收益率*计息天数/365
-3、金融领域百二通常指2%
+3、理财产品的复利收益计算公式为：\[ \text{最终收益} = \text{初始投资金额} \times (1 + \text{年利率}/n)^{n \times \text{投资年限}} - \text{初始投资金额} \]
+4、金融领域百二通常指2%
+5、申购只需支出申购费
 """
     file_path = "./data/1224评估详情.xlsx"
     output_path = "./data/1224评估详情_kagout1_withcode.xlsx"
