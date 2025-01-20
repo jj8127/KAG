@@ -1,5 +1,6 @@
 from kag.solver.logic.solver_pipeline import SolverPipeline
 from kag.solver.implementation.table.table_reasoner import TableReasoner
+from kag.solver.implementation.table.code_reasoner import CodeReasoner
 import json
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -16,7 +17,8 @@ class FinStateSolver(SolverPipeline):
         self, max_run=3, reflector=None, reasoner=None, generator=None, **kwargs
     ):
         super().__init__(max_run, reflector, reasoner, generator, **kwargs)
-        self.table_reasoner = TableReasoner(**kwargs)
+        # self.table_reasoner = TableReasoner(**kwargs)
+        self.table_reasoner = CodeReasoner(**kwargs)
 
     def run(self, question, context):
         """
@@ -53,6 +55,7 @@ def parse_original_string(original_string):
 
 def loadDataFromCsv(file_path):
     # 对特定case打印code
+    # special_case_id = [603150026]
     special_case_id = [603150384, 603150085, 603150199, 603150026, 603149931, 603150273, 603150230, 603150181, 603150296]
     # dataframe = pd.read_csv(file_path)
     dataframe = pd.read_excel(file_path, engine='openpyxl')
@@ -139,6 +142,6 @@ if __name__ == "__main__":
 6、派息份额指的是将投资产品的红利或股息再投资以获得额外份额。计算时，首先确定总派息金额，然后根据派息时的单位净值（价格）计算再投资能获得的额外份额，最后将这些新获得的份额加到原有份额中，更新总持有份额。
 """
     file_path = "./data/1224评估详情.xlsx"
-    output_path = "./data/1224评估详情_kagout1_withcode.xlsx"
+    output_path = "./data/1224评估详情_kagout3.xlsx"
     # sft_path = './data/1224评估详情_sftdata.xlsx'
-    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, sft_path= None, threadNum=10, upperLimit=300, domain_konwledge = domain_konwledge)
+    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, sft_path= None, threadNum=1, upperLimit=300, domain_konwledge = domain_konwledge)
