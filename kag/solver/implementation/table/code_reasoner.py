@@ -156,7 +156,7 @@ class CodeReasoner(KagReasonerABC):
                     # 重新进行规划
                     sub_question_faild = True
                     break
-
+            
             if sub_question_faild:
                 # logic form planing
                 sub_question_list = self._get_sub_question_list(
@@ -166,9 +166,11 @@ class CodeReasoner(KagReasonerABC):
                 continue
             else:
                 # run code  
+                node = SearchTreeNode("Code result: "+question, "PythonCoder")
                 rst, run_error, code = self._run_python_coder_func(
                     code_agent=code_agent, node=node, parameters=retrieval_context, retrieval_questions = retrieval_questions
                 )
+                history.add_now_procesing_ndoe(node)
                 if run_error is not None:
                     continue
                 else:
@@ -193,7 +195,7 @@ class CodeReasoner(KagReasonerABC):
             # 总结答案
             final_answer = llm.invoke(
                 {
-                    "memory": str(history)+code,
+                    "memory": str(history),
                     "question": history.root_node.question,
                     "dk": history.dk,
                 },
@@ -206,7 +208,7 @@ class CodeReasoner(KagReasonerABC):
             final_answer_form_llm = False
             final_answer = llm.invoke(
                 {
-                    "memory": str(history)+code,
+                    "memory": str(history),
                     "question": history.root_node.question,
                     "dk": history.dk,
                 },

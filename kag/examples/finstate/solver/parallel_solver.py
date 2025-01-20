@@ -56,7 +56,7 @@ def parse_original_string(original_string):
 def loadDataFromCsv(file_path):
     # 对特定case打印code
     # special_case_id = [603150026]
-    special_case_id = [603150384, 603150085, 603150199, 603150026, 603149931, 603150273, 603150230, 603150181, 603150296]
+    # special_case_id = [603150384, 603150085, 603150199, 603150026, 603149931, 603150273, 603150230, 603150181, 603150296]
     # dataframe = pd.read_csv(file_path)
     dataframe = pd.read_excel(file_path, engine='openpyxl')
     if 'json_prompt' not in dataframe.columns:
@@ -74,8 +74,8 @@ def loadDataFromCsv(file_path):
             continue
         if dataframe.notna().loc[index, 'kag_output'] and row['kag_output'] != '':
             continue
-        if row['id'] not in special_case_id:
-            continue
+        # if row['id'] not in special_case_id:
+        #     continue
         question = row['当前问题']
         context = parse_original_string(row["prompt"])
         label_answer = row['labelAnswer']
@@ -144,4 +144,4 @@ if __name__ == "__main__":
     file_path = "./data/1224评估详情.xlsx"
     output_path = "./data/1224评估详情_kagout3.xlsx"
     # sft_path = './data/1224评估详情_sftdata.xlsx'
-    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, sft_path= None, threadNum=1, upperLimit=300, domain_konwledge = domain_konwledge)
+    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, sft_path= None, threadNum=10, upperLimit=300, domain_konwledge = domain_konwledge)
