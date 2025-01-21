@@ -103,7 +103,7 @@ prompt_template = """
 def get_llm_client(offline=True, model_ip=None):
     if offline:
         base_url = "https://api.deepseek.com/"
-        api_key = "sk-4323e7aaab36449fab52b0ed86e29696"
+        api_key = ""
     else:
         base_url = f"http://{model_ip}:8888/v1"
         api_key = "dummy"
