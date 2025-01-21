@@ -11,7 +11,7 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 import re
-
+import time
 domain_knowledge = ["context中'权威检索'优先级高于'客服扩展检索', '客服扩展检索'优先级高于'扩展搜索'",
                     "货币基金的收益计算方式为：产品收益=买入金额*约定年化收益率*计息天数/365，余额宝是货币基金的一种。",
                     "理财产品的收益需要计算复利，计算公式为：最终收益 = 初始投资金额 * (1 + 日收益率)^{投资天数} - 初始投资金额，日收益率 = (1 + 年收益率)^{1/365} - 1",
@@ -218,9 +218,9 @@ def main(input_file_path, output_path, threadNum=1, upperLimit=5, ):
     def kag_reason_for_kg(input):
         sample_idx, inputItem = input
         question, supply_content, index, label_answer = inputItem
-        # model_path = "/Qwen/Qwen2___5-Coder-7B-Instruct/"
-        # model_ip = "33.213.79.32"
-        # offline=False
+        model_path = "/Qwen/Qwen2___5-Coder-32B-Instruct/"
+        model_ip = "33.213.79.32"
+        offline=False
 
         model_path = "deepseek-chat"
         model_ip = None
@@ -259,6 +259,8 @@ def main(input_file_path, output_path, threadNum=1, upperLimit=5, ):
 
 if __name__ == "__main__":
     input_file_path = "./data/对外版本.xlsx"
-    output_path = "./data/1224评估详情_kagout3.xlsx"
-
+    output_path = "./data/1224评估详情_kagout5.xlsx"
+    time_start = time.time()
     main(input_file_path, output_path, threadNum=2, upperLimit=5)
+    time_end = time.time()
+    print(f"Time cost: {time_end - time_start}s")
