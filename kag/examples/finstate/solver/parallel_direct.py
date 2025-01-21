@@ -4,6 +4,7 @@ import json
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
+import time
 
 class FinStateSolver(SolverPipeline):
     """
@@ -39,8 +40,8 @@ def parallelQaAndEvaluate(file_path, output_path, threadNum = 4, upperLimit = 5)
     def do_reasone_task(data):
         sample_idx, sample = data
         question, index = sample
-        # solver = FinStateSolver(KAG_PROJECT_ID=300024)
-        solver = FinStateSolver(KAG_PROJECT_ID=1)
+        solver = FinStateSolver(KAG_PROJECT_ID=300024)
+        # solver = FinStateSolver(KAG_PROJECT_ID=1)
         answer = solver.run(question)
         return sample_idx, answer, index
     
@@ -69,4 +70,7 @@ def parallelQaAndEvaluate(file_path, output_path, threadNum = 4, upperLimit = 5)
 if __name__ == "__main__":
     file_path = "./data/1224评估详情.xlsx"
     output_path = "./data/1224评估详情_test.xlsx"
+    start_time = time.time()
     parallelQaAndEvaluate(file_path = file_path, output_path = output_path, threadNum=10, upperLimit=300)
+    end_time = time.time()
+    print(f"Time cost: {end_time - start_time}s")
