@@ -6,6 +6,7 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 import re
+import time
 from openpyxl import Workbook
 
 class FinStateSolver(SolverPipeline):
@@ -17,8 +18,8 @@ class FinStateSolver(SolverPipeline):
         self, max_run=3, reflector=None, reasoner=None, generator=None, **kwargs
     ):
         super().__init__(max_run, reflector, reasoner, generator, **kwargs)
-        # self.table_reasoner = TableReasoner(**kwargs)
-        self.table_reasoner = CodeReasoner(**kwargs)
+        self.table_reasoner = TableReasoner(**kwargs)
+        # self.table_reasoner = CodeReasoner(**kwargs)
 
     def run(self, question, context):
         """
@@ -89,8 +90,8 @@ def parallelQaAndEvaluate(file_path, output_path, sft_path = None, threadNum = 4
         # print(f"input data:{data}")
         sample_idx, sample = data
         question, context, index, label_answer = sample
-        solver = FinStateSolver(KAG_PROJECT_ID=300024)
-        # solver = FinStateSolver(KAG_PROJECT_ID=1)
+        # solver = FinStateSolver(KAG_PROJECT_ID=300024)
+        solver = FinStateSolver(KAG_PROJECT_ID=1)
         # try:
         solver.run(TableReasoner.DOMAIN_KNOWLEDGE_INJECTION +  domain_konwledge, context = "")
         response, history, sub_question_list, retrieval_context, codes = solver.run(question, context)
@@ -142,6 +143,9 @@ if __name__ == "__main__":
 6、派息份额指的是将投资产品的红利或股息再投资以获得额外份额。计算时，首先确定总派息金额，然后根据派息时的单位净值（价格）计算再投资能获得的额外份额，最后将这些新获得的份额加到原有份额中，更新总持有份额。
 """
     file_path = "./data/1224评估详情.xlsx"
-    output_path = "./data/1224评估详情_kagout3.xlsx"
+    output_path = "./data/1224评估详情_kagout_timetest.xlsx"
     # sft_path = './data/1224评估详情_sftdata.xlsx'
-    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, sft_path= None, threadNum=10, upperLimit=300, domain_konwledge = domain_konwledge)
+    start_time = time.time()
+    parallelQaAndEvaluate(file_path = file_path, output_path = output_path, sft_path= None, threadNum=1, upperLimit=10, domain_konwledge = domain_konwledge)
+    end_time = time.time()
+    print(f"Time cost: {end_time - start_time}s")
