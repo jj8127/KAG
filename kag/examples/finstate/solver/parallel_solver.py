@@ -18,8 +18,8 @@ class FinStateSolver(SolverPipeline):
         self, max_run=3, reflector=None, reasoner=None, generator=None, **kwargs
     ):
         super().__init__(max_run, reflector, reasoner, generator, **kwargs)
-        # self.table_reasoner = TableReasoner(**kwargs)
-        self.table_reasoner = CodeReasoner(**kwargs)
+        self.table_reasoner = TableReasoner(**kwargs)
+        # self.table_reasoner = CodeReasoner(**kwargs)
 
     def run(self, question, context):
         """

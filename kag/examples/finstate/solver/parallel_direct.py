@@ -1,5 +1,5 @@
 from kag.solver.logic.solver_pipeline import SolverPipeline
-from kag.solver.implementation.table.answer_judge import AnswerReasoner
+from kag.solver.implementation.table.direct_answer import AnswerReasoner
 import json
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -16,25 +16,21 @@ class FinStateSolver(SolverPipeline):
         super().__init__(max_run, reflector, reasoner, generator, **kwargs)
         self.table_reasoner = AnswerReasoner(**kwargs)
 
-    def run(self, question, label_answer, out_answer):
-        return self.table_reasoner.reason(question, label_answer, out_answer)
+    def run(self, question):
+        return self.table_reasoner.reason(question)
 
 
 def loadDataFromCsv(file_path):
-    # dataframe = pd.read_csv(file_path)
     dataframe = pd.read_excel(file_path, engine='openpyxl')
     if 'llm_judge' not in dataframe.columns:
         dataframe['llm_judge'] = ''
 
     inputList = []
     for index, row in dataframe.iterrows():
-        if row['questionType']!="数值计算" or dataframe.notna().loc[index, 'kag_output'] == False:
+        if row['questionType']!="数值计算":
             continue
-        question = row['当前问题']
-        label_answer = row['labelAnswer']
-        out_answer = row['kag_output']
-        # out_answer = row['answer']
-        inputList.append((question, label_answer, out_answer,row['llm_judge'], index))
+        question = row['prompt']
+        inputList.append((question, index))
 
     return dataframe, inputList
 
@@ -42,15 +38,12 @@ def parallelQaAndEvaluate(file_path, output_path, threadNum = 4, upperLimit = 5)
 
     def do_reasone_task(data):
         sample_idx, sample = data
-        question, label_answer, out_answer, judge_out, index = sample
-        if judge_out != '':
-            return sample_idx, json.loads(judge_out), index
+        question, index = sample
         # solver = FinStateSolver(KAG_PROJECT_ID=300024)
         solver = FinStateSolver(KAG_PROJECT_ID=1)
-        answer = solver.run(question, label_answer, out_answer)
+        answer = solver.run(question)
         return sample_idx, answer, index
     
-    tot_ans = dict()
     df, inputList = loadDataFromCsv(file_path)
     with ThreadPoolExecutor(max_workers=threadNum) as executor:
         futures = [
@@ -68,17 +61,12 @@ def parallelQaAndEvaluate(file_path, output_path, threadNum = 4, upperLimit = 5)
                 # Proceed to process the result if successful
                 if result is not None:
                     sample_idx, answer, index = result
-                    if answer["答案类别"] not in tot_ans:
-                        tot_ans[answer["答案类别"]] = 1
-                    else:
-                        tot_ans[answer["答案类别"]] += 1
-                    df.loc[index, 'llm_judge'] = json.dumps(answer, ensure_ascii=False)
+                    df.loc[index, 'llm_judge'] = answer
             except Exception as e:
                 print(f"An error occurred: {e}")
-    print(tot_ans)
     df.to_excel(output_path)
 
 if __name__ == "__main__":
-    file_path = "/Users/liuxiao/Downloads/1224评估详情_kagout3.xlsx"
-    output_path = "/Users/liuxiao/Downloads/1224评估详情_kagout3_judge.xlsx"
+    file_path = "./data/1224评估详情.xlsx"
+    output_path = "./data/1224评估详情_test.xlsx"
     parallelQaAndEvaluate(file_path = file_path, output_path = output_path, threadNum=10, upperLimit=300)
