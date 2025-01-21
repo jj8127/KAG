@@ -409,6 +409,14 @@ class TableReasoner(KagReasonerABC):
         self, init_question, node: SearchTreeNode, history: SearchTree, context:str
     ):
         agent = PythonCoderAgent(init_question, node.question, history, context, **self.kwargs)
+        llm_config = {
+            'client_type': 'maas',
+            'base_url': 'http://33.213.79.32:8888/v1',
+            'api_key': 'dummy',
+            'model': '/Qwen/Qwen2___5-Coder-7B-Instruct/',
+            'temperature': '0.2',
+        }
+        agent.llm_module = LLMClient.from_config(llm_config)
         sub_answer, code = agent.answer()
         node.answer = sub_answer
         node.answer_desc = self._process_coder_desc(code)
