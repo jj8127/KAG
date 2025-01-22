@@ -191,7 +191,8 @@ def deserialize_prompt(markdown_text):
 def loadDataFromCsv(file_path):
     # 对特定case打印code
     # special_case_id = [603150384, 603150085, 603150199, 603150026, 603149931, 603150273, 603150230, 603150181, 603150296]
-    dataframe = pd.read_excel(file_path, engine='openpyxl')
+    # dataframe = pd.read_excel(file_path, engine='openpyxl')
+    dataframe = pd.read_csv(file_path)
     if 'kag_output' not in dataframe.columns:
         dataframe['kag_output'] = ''
 
@@ -219,12 +220,12 @@ def main(input_file_path, output_path, threadNum=1, upperLimit=5, ):
         sample_idx, inputItem = input
         question, supply_content, index, label_answer = inputItem
         model_path = "/Qwen/Qwen2___5-Coder-32B-Instruct/"
-        model_ip = "33.213.79.32"
+        model_ip = "33.213.38.169"
         offline=False
 
-        model_path = "deepseek-chat"
-        model_ip = None
-        offline=True
+        # model_path = "deepseek-chat"
+        # model_ip = None
+        # offline=True
 
         query = getInputPrompt(inputItem)
 
@@ -258,7 +259,7 @@ def main(input_file_path, output_path, threadNum=1, upperLimit=5, ):
     df.to_excel(output_path)
 
 if __name__ == "__main__":
-    input_file_path = "./data/对外版本.xlsx"
+    input_file_path = "./data/对外版本.csv"
     output_path = "./data/1224评估详情_kagout5.xlsx"
     time_start = time.time()
     main(input_file_path, output_path, threadNum=2, upperLimit=5)
