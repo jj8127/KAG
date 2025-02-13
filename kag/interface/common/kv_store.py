@@ -22,7 +22,13 @@ def init_db(db_name):
 
 
 class KVStore:
-    def __init__(self, db_name):
+    def __init__(self, db_name=None):
+        if db_name is None:
+            from kag.examples.TableEval.solver import RUN_ENV
+            if RUN_ENV is None:
+                db_name = "/tmp/llm_cache"
+            else:
+                db_name = "/ossfs/workspace/llm_cache"
         if not have_sql_lite:
             self.disable = True
             return

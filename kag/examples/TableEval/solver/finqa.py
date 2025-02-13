@@ -15,6 +15,8 @@ from kag.examples.TableEval.solver.finqa_component.resp_finqa import FinQARespGe
 from kag.common.registry import import_modules_from_path
 from kag.common.conf import KAG_CONFIG
 
+from kag.examples.TableEval.solver import RUN_ENV
+
 
 def qa(question, **kwargs):
     llm: LLMClient = LLMClient.from_config(KAG_CONFIG.all_config["chat_llm"])
@@ -29,13 +31,14 @@ def qa(question, **kwargs):
 
 
 def build_finqa_graph(item):
-    from kag.examples.FinState.builder.graph_db_tools import clear_neo4j_data
+    from kag.examples.FinState.builder.graph_db_tools import clear_neo4j_data, clear_neo4j_data_api
 
     current_working_directory = os.getcwd()
     ckpt_path = os.path.join(current_working_directory, "ckpt")
     if os.path.exists(ckpt_path):
         shutil.rmtree(ckpt_path)
     clear_neo4j_data("tableeval")
+    clear_neo4j_data_api()
     file_name = convert_finqa_to_md_file(item)
     runner = BuilderChainRunner.from_config(
         KAG_CONFIG.all_config["finqa_builder_pipeline"]
@@ -43,12 +46,18 @@ def build_finqa_graph(item):
     runner.invoke(file_name)
 
 
+from kag.examples.TableEval.solver import RUN_ENV
+
 def load_finqa_data() -> list:
-    finqa_data_path = "/Users/youdonghai/code/rag/FinQA/dataset"
+    if RUN_ENV is None:
+        finqa_data_path = "/Users/youdonghai/code/rag/FinQA/dataset"
+    else:
+        finqa_data_path = "/ossfs/workspace/FinQA/dataset"
     file_name = "dev.json"
     file_name = os.path.join(finqa_data_path, file_name)
     with open(file_name, "r", encoding="utf-8") as f:
         data_list = json.load(f)
+    print("finqa data list len " + str(len(data_list)))
     return data_list
 
 
@@ -78,7 +87,8 @@ class MultiHerttEvaluate(Evaluate):
         new_goldlist = []
         # 如果是数值，按照精度进行判断
         for _i, _prediction in enumerate(predictionlist):
-            gold = goldlist[_i]
+            _prediction = str(_prediction)
+            gold = str(goldlist[_i])
             try:
                 if "%" in gold:
                     gold = gold.strip("%")
@@ -109,9 +119,11 @@ class MultiHerttEvaluate(Evaluate):
 
 
 if __name__ == "__main__":
-    import_modules_from_path(
-        "/Users/youdonghai/code/KAG_ant/dep/KAG/kag/examples/FinState/builder_component"
-    )
+    if RUN_ENV is None:
+        module_path = "/Users/youdonghai/code/KAG_ant/dep/KAG/kag/examples/FinState/builder_component"
+    else:
+        module_path = "/ossfs/workspace/KAG/dep/KAG/kag/examples/FinState/builder_component"
+    import_modules_from_path(module_path)
     _data_list = load_finqa_data()
     evaObj = MultiHerttEvaluate()
     total_metrics = {
@@ -120,16 +132,29 @@ if __name__ == "__main__":
         "answer_similarity": 0.0,
         "processNum": 0,
     }
-    _count = 0
-    for _item in _data_list:
-        _count += 1
+    debug_index = None
+    error_question_index_list = []
+    for i, _item in enumerate(_data_list):
+        if debug_index is not None:
+            if i != debug_index:
+                continue
         build_finqa_graph(_item)
         _question = _item["qa"]["question"]
         _gold = _item["qa"]["answer"]
         _prediction = qa(question=_question)
         print("#" * 100)
-        print("gold=" + str(_gold) + ",prediction=" + str(_prediction))
+        print(
+            "index="
+            + str(i)
+            + ",gold="
+            + str(_gold)
+            + ",prediction="
+            + str(_prediction)
+        )
         metrics = evaObj.getBenchMark([_prediction], [_gold])
+
+        if metrics["em"] < 0.9:
+            error_question_index_list.append(i)
 
         total_metrics["em"] += metrics["em"]
         total_metrics["f1"] += metrics["f1"]
@@ -137,6 +162,9 @@ if __name__ == "__main__":
         total_metrics["processNum"] += 1
 
         print(total_metrics)
+        print("error index list=" + str(error_question_index_list))
         print("#" * 100)
-        if _count >= 50:
+        if debug_index is not None:
+            break
+        if i >= 49:
             break

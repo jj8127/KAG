@@ -33,7 +33,7 @@ class LLMClient(Registrable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.kv_store = KVStore("/tmp/llm_cache")
+        self.kv_store = KVStore()
 
     @retry(stop=stop_after_attempt(3))
     def __call__(self, prompt: Union[str, dict, list]) -> str:

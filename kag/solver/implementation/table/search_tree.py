@@ -138,7 +138,7 @@ class SearchTree:
                 }
             }
 
-        context = f"Solution_Space_Tree:\n{json.dumps(build_tree_context(self.root_node),ensure_ascii=False,indent=2)}"
+        context = f"Solution_Space_Tree:\n{json.dumps(build_tree_context(self.root_node),ensure_ascii=False,indent=2,sort_keys=True)}"
         return context
 
     def _graph_to_json(self):

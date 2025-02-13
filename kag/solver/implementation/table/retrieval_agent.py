@@ -220,7 +220,7 @@ class TableRetrievalAgent(ChunkRetriever):
 
         print(
             "table_symbol_retrival,get_spo_list="
-            + json.dumps(get_spo_list, ensure_ascii=False)
+            + json.dumps(get_spo_list, ensure_ascii=False, sort_keys=True)
         )
 
         if "i don't know" in str(get_spo_list).lower():
@@ -262,7 +262,7 @@ class TableRetrievalAgent(ChunkRetriever):
         kg_graph_deep_copy.merge_kg_graph(kg_graph)
         self._table_kg_graph_with_desc(kg_graph_deep_copy)
         graph_docs = kg_graph_deep_copy.to_answer_path()
-        graph_docs = json.dumps(graph_docs, ensure_ascii=False, indent=2)
+        graph_docs = json.dumps(graph_docs, ensure_ascii=False, indent=2, sort_keys=True)
         last_data = kg_graph_deep_copy.get_entity_by_alias(last_var)
         if last_data:
             graph_docs = [str(d) for d in last_data]
@@ -404,7 +404,7 @@ class TableRetrievalAgent(ChunkRetriever):
                 item.prop.reomve_prop_value("csv")
                 item.prop.reomve_prop_value("content")
                 rst_dict[var_name].append(item.to_json())
-        return json.dumps(rst_dict, ensure_ascii=False)
+        return json.dumps(rst_dict, ensure_ascii=False, sort_keys=True)
 
     def _get_spo_list_to_str(self, get_spo_list):
         get_spo_str_list = []
@@ -425,7 +425,7 @@ class TableRetrievalAgent(ChunkRetriever):
             link_list_str = s["link"]
             if isinstance(link_list_str, str):
                 link_list_str = [link_list_str]
-            the_str += f"{json.dumps(link_list_str, ensure_ascii=False)}"
+            the_str += f"{json.dumps(link_list_str, ensure_ascii=False, sort_keys=True)}"
         return the_str
 
     def _query_spo(self, s, p, o, kg_graph: KgGraph, o_with_topk=30):
@@ -454,7 +454,7 @@ class TableRetrievalAgent(ChunkRetriever):
             for node in s_data:
                 s_id_list.append(node.biz_id)
 
-        sid_str = json.dumps(s_id_list)
+        sid_str = json.dumps(s_id_list, sort_keys=True)
 
         s_type = self._std_type(s, kg_graph)
         p_type = self._std_type(p, kg_graph)

@@ -24,10 +24,9 @@ log:
 
 project:
   biz_scene: table
-  host_addr: http://127.0.0.1:8887
-  id: '2'
-  # host_addr: http://antspg-gz00b-006000164057.sa128-sqa.alipay.net:8887
-  # id: '3500002'
+  #host_addr: http://127.0.0.1:8887
+  host_addr: http://antspg-gz00b-006000164057.sa128-sqa.alipay.net:8887
+  id: '3500002'
   language: en
   namespace: TableEval
 #------------project configuration end----------------#
