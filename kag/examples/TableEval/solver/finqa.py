@@ -119,13 +119,13 @@ class MultiHerttEvaluate(Evaluate):
     def is_close_rel(self, a, b, rel_tol=1e-9):
         return abs(a - b) < rel_tol * max(abs(a), abs(b))
 
+import kag.examples.FinState.builder_component.table_and_text_extractor
+import kag.examples.FinState.builder_component.table_classify_prompt
+import kag.examples.FinState.builder_component.table_context_prompt
+import kag.examples.FinState.builder_component.table_keywords_prompt
+import kag.examples.FinState.builder_component.table_reformat_prompt
 
 if __name__ == "__main__":
-    if RUN_ENV is None:
-        module_path = "/Users/youdonghai/code/KAG_ant/dep/KAG/kag/examples/FinState/builder_component"
-    else:
-        module_path = "/ossfs/workspace/KAG/dep/KAG/kag/examples/FinState/builder_component"
-    import_modules_from_path(module_path)
     _data_list = load_finqa_data()
     evaObj = MultiHerttEvaluate()
     total_metrics = {
@@ -140,10 +140,15 @@ if __name__ == "__main__":
         if debug_index is not None:
             if i != debug_index:
                 continue
-        build_finqa_graph(_item)
         _question = _item["qa"]["question"]
         _gold = _item["qa"]["answer"]
-        _prediction = qa(question=_question)
+        try:
+            build_finqa_graph(_item)
+            _prediction = qa(question=_question)
+        except KeyboardInterrupt:
+            break
+        except:
+            _prediction = str(None)
         print("#" * 100)
         print(
             "index="
