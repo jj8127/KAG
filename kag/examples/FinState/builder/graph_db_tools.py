@@ -30,12 +30,21 @@ def clear_neo4j_data_api():
     import requests
 
     try:
-        url = KAG_PROJECT_CONF.host_addr + "/graph/clear_db"
+        url = KAG_PROJECT_CONF.host_addr + "/public/v1/graph/clear_db"
         r_data = {"projectId": KAG_PROJECT_CONF.project_id}
-        requests.post(
+        rst = requests.post(
             url,
-            data=r_data,
-            timeout=100,
+            json=r_data,
+            timeout=100000,
+            headers={
+                "Accept": "*/*",
+                "Content-Type": "application/json",
+            },
         )
+        print("clear db status code " + str(rst.status_code))
     except:
         logging.exception("call url error, url=" + url + ",data=" + str(r_data))
+
+
+if __name__ == "__main__":
+    clear_neo4j_data_api()

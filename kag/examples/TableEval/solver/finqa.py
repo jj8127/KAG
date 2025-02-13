@@ -29,6 +29,7 @@ def qa(question, **kwargs):
     )
     return table_reasoner.reason(question, **kwargs)
 
+from kag.examples.TableEval.solver import RUN_ENV
 
 def build_finqa_graph(item):
     from kag.examples.FinState.builder.graph_db_tools import clear_neo4j_data, clear_neo4j_data_api
@@ -37,8 +38,10 @@ def build_finqa_graph(item):
     ckpt_path = os.path.join(current_working_directory, "ckpt")
     if os.path.exists(ckpt_path):
         shutil.rmtree(ckpt_path)
-    clear_neo4j_data("tableeval")
-    clear_neo4j_data_api()
+    if RUN_ENV is None:
+        clear_neo4j_data("tableeval")
+    else:
+        clear_neo4j_data_api()
     file_name = convert_finqa_to_md_file(item)
     runner = BuilderChainRunner.from_config(
         KAG_CONFIG.all_config["finqa_builder_pipeline"]
@@ -46,7 +49,6 @@ def build_finqa_graph(item):
     runner.invoke(file_name)
 
 
-from kag.examples.TableEval.solver import RUN_ENV
 
 def load_finqa_data() -> list:
     if RUN_ENV is None:
