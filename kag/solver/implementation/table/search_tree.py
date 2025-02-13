@@ -129,7 +129,8 @@ class SearchTree:
                     filtered_results.append(result)
             answer_str = node.answer
             if answer_str is None:
-                answer_str = "等待子问题解答中"
+                #answer_str = "等待子问题解答中"
+                answer_str = "Waiting for the sub-question to be answered."
             return {
                 f"{node.question}": {
                     "answer": answer_str,

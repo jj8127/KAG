@@ -23,7 +23,9 @@ from kag.solver.prompt.table.rewrite_sub_question import RewriteSubQuestionPromp
 from knext.reasoner.rest.models.data_edge import DataEdge
 from knext.reasoner.rest.models.data_node import DataNode
 from knext.reasoner.rest.models.sub_graph import SubGraph
-from kag.solver.implementation.table.table_common import _convert_lf_res_to_report_format
+from kag.solver.implementation.table.table_common import (
+    _convert_lf_res_to_report_format,
+)
 
 logger = logging.getLogger()
 
@@ -43,9 +45,17 @@ class TableReasoner(KagReasonerABC):
         # self.logic_form_plan_prompt = PromptABC.from_config({"type": "logic_form_plan_table"})
         self.logic_form_plan_prompt = LogicFormPlanPrompt(language=self.language)
         # self.resp_generator = PromptABC.from_config({"type": "resp_with_dk_generator"})
-        self.resp_generator = RespGenerator(language=self.language)
+        resp_generator = kwargs.get("resp_generator", None)
+        if resp_generator is None:
+            self.resp_generator = RespGenerator(language=self.language)
+        else:
+            self.resp_generator = resp_generator
         # self.resp_think_generator = PromptABC.from_config({"type": "resp_think_generator"})
-        self.resp_think_generator = RethinkRespGenerator(language=self.language)
+        resp_think_generator = kwargs.get("resp_think_generator", None)
+        if resp_think_generator is None:
+            self.resp_think_generator = RethinkRespGenerator(language=self.language)
+        else:
+            self.resp_think_generator = resp_think_generator
         # self.judge_prompt = PromptABC.from_config({"type": "default_resp_judge"})
         self.judge_prompt = RespJudge(language=self.language)
         # self.rewrite_subquestion = PromptABC.from_config({"type": "rewrite_sub_question"})
@@ -284,7 +294,7 @@ class TableReasoner(KagReasonerABC):
             # 两路召回同时做符号求解
             futures = [
                 executor.submit(table_retrical_agent.symbol_solver, history=history),
-                #executor.submit(self._call_spo_retravel_func, now_question),
+                # executor.submit(self._call_spo_retravel_func, now_question),
             ]
 
             # 等待任务完成并获取结果

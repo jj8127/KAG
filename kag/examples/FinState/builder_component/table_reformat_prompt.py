@@ -91,7 +91,73 @@ class TableReformatPrompt(PromptABC):
 $input
 """
 
-    template_en = template_zh
+    template_en = """
+# task
+Merge the table headers and index columns.
+Identify hierarchical relationships between the rows of the table.
+
+# instruction
+Combine multi-row table headers into a single row, ensuring the new headers are complete and easy to understand.
+Merge multi-column indices into a single column with content that is complete and easy to understand.
+Identify hierarchical relationships in the index column; use "-" (hyphen) to indicate subordinate relationships. Use multiple "-" for multi-level subordinate relationships.
+Move the superior relationship above the subordinate relationship.
+Refer to the given example and output the table in markdown format; other information does not need to be retained.
+
+# output_format
+Output the converted markdown table.
+
+# examples
+## input
+
+| | 截至9月30日止六个月 | | | | |
+|---|---|---|---|---|---|
+| | 2023 | 2024 | | | | 
+| | 人民币 | 人民币 | 美元 | %同比变动 | | |
+| | （以百万计，百分比除外） | | | | |
+| 淘天集团： |||||
+| 中国零售商业 |||||
+| — 客户管理 | 148,322 | 150,479 | 21,443 | 1% |
+| — 直营及其他(1) | 54,066 | 49,950 | 7,118 | (8)% |
+|| 202,388 | 200,429 | 28,561 | (1)% |
+| 中国批发商业 | 10,219 | 11,938 | 1,701 | 17% |
+| 淘天集团合计 | 212,607 | 212,367 | 30,262 | (0)% |
+| 云智能集团 | 52,713 | 56,159 | 8,003 | 7% |
+| 阿里国际数字商业集团： |||||
+| 国际零售商业 | 36,116 | 49,309 | 7,026 | 37% |
+| 国际批发商业 | 10,518 | 11,656 | 1,661 | 11% |
+| 阿里国际数字商业集团合计 | 46,634 | 60,965 | 8,687 | 31% |
+| 菜鸟集团 | 45,987 | 51,458 | 7,333 | 12% |
+| 本地生活集团 | 30,014 | 33,954 | 4,838 | 13% |
+| 大文娱集团 | 11,160 | 11,275 | 1,607 | 1% |
+| 所有其他(2) | 93,850 | 99,179 | 14,133 | 6% |
+| 未分摊 | 526 | 888 | 126 ||
+| 分部间抵销 | (34,545) | (46,506) | (6,627) ||
+| 合并收入 | 458,946 | 479,739 | 68,362 | 5% |
+
+## output
+
+| （以百万计，百分比除外） | 2023年-截至9月30日止六个月-人民币 | 2024年-截至9月30日止六个月-人民币 | 2024年-截至9月30日止六个月-美元 | 2024年-截至9月30日止六个月-%同比变动 | |
+|---|---|---|---|---|---|
+| 合并收入 | 458,946 | 479,739 | 68,362 | 5% |
+| - 淘天集团 | 212,607 | 212,367 | 30,262 | (0)% |
+| -- 中国零售商业 | 202,388 | 200,429 | 28,561 | (1)% |
+| --- 客户管理 | 148,322 | 150,479 | 21,443 | 1% |
+| --- 直营及其他(1) | 54,066 | 49,950 | 7,118 | (8)% |
+| -- 中国批发商业 | 10,219 | 11,938 | 1,701 | 17% |
+| - 云智能集团 | 52,713 | 56,159 | 8,003 | 7% |
+| - 阿里国际数字商业集团 | 46,634 | 60,965 | 8,687 | 31% |
+| -- 国际零售商业 | 36,116 | 49,309 | 7,026 | 37% |
+| -- 国际批发商业 | 10,518 | 11,656 | 1,661 | 11% |
+| - 菜鸟集团 | 45,987 | 51,458 | 7,333 | 12% |
+| - 本地生活集团 | 30,014 | 33,954 | 4,838 | 13% |
+| - 大文娱集团 | 11,160 | 11,275 | 1,607 | 1% |
+| - 所有其他(2) | 93,850 | 99,179 | 14,133 | 6% |
+| - 未分摊 | 526 | 888 | 126 ||
+| - 分部间抵销 | (34,545) | (46,506) | (6,627) ||
+
+# real input
+$input
+"""
 
     def __init__(self, language: Optional[str] = "en", **kwargs):
         super().__init__(language, **kwargs)

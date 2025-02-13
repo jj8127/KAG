@@ -42,7 +42,7 @@ class TableClassifyPrompt(PromptABC):
           "output": {
             "table_type": "指标型表格",
             "header": [
-              0,
+              0
             ],
             "index_col": [
               0
@@ -107,7 +107,93 @@ class TableClassifyPrompt(PromptABC):
 }
 """
 
-    template_en = template_zh
+    template_en = """
+{
+  "task": "Table Classification and Information Extraction",
+  "description": "The goal of this task is to classify a given table into three categories: Metric_Based_Table, Simple_Table, and Other_Table. For each type of table, specific information needs to be extracted and outputted.",
+  "categories": [
+    {
+      "name": "Metric_Based_Table",
+      "definition": "Tables with numbers as the core content, such as financial statements.",
+      "required_output": {
+        "header": "Index of rows occupied by the header (starting from 0)",
+        "index_col": "Index of the column where the key identifier is located (starting from 0)",
+        "units": "Measurement units, such as USD or RMB",
+        "scale": "Numerical scale, such as thousands, millions"
+      },
+      "examples": [
+        {
+          "input": "The breakdown of our adjusted EBITA by segment for the period is as follows:\n\n|  | Six months ended September 30, 2023 - RMB (in millions, except percentages) | Six months ended September 30, 2024 - RMB (in millions, except percentages) | Six months ended September 30, 2024 - USD (in millions, except percentages) | % YoY change |\n| --- | --- | --- | --- | --- |\n| Tao Tian Group | 96,396 | 93,400 | 13,309 | (3)% |\n",
+          "output": {
+            "table_type": "Metric_Based_Table",
+            "header": [
+              0
+            ],
+            "index_col": [
+              0
+            ],
+            "units": [
+              "RMB",
+              "USD"
+            ],
+            "scale": "Millions"
+          }
+        },
+        {
+          "input": "Domestic Travel Accommodation Allowance and Attendance Subsidy Allowance Standard Table\n| Company | Personnel Category | Item | Standard for Region I | Standard for Region II | Standard for Region III |\n|----------|------------------------------|--------------|--------------|--------------|--------------|\n| Company | Personnel Category | Item | Category I | Category II | Category III |\n| Group Company | Senior Executives | Accommodation Allowance | 1500 | 1300 | 900 |\n| Group Company | Senior Executives | Attendance Subsidy Allowance | 50 | 25 | 0 |\n| Group Company | Platform Department Manager | Accommodation Allowance | 600 | 500 | 400 |\n| Group Company | Platform Department Manager | Attendance Subsidy Allowance | 200 | 100 | 50 |\n| Group Company | Senior Manager of Professional Positions, Senior Experts | Accommodation Allowance | 450 | 350 | 300 |\n| Group Company | Senior Manager of Professional Positions, Senior Experts | Attendance Subsidy Allowance | 100 | 100 | 80 |\n| Group Company | Other Employees | Accommodation Allowance | 400 | 300 | 250 |\n| Group Company | Other Employees | Attendance Subsidy Allowance | 180 | 180 | 150 |",
+          "output": {
+            "table_type": "Metric_Based_Table",
+            "header_rows": [
+              0,
+              1
+            ],
+            "index_col": [
+              0,
+              1,
+              2
+            ],
+            "units": "RMB",
+            "scale": "None"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Simple_Table",
+      "definition": "Tables not centered around numerical values. Such tables can still be understood even when split by length.",
+      "required_output": {
+        "header": "Index of rows occupied by the header (starting from 0)",
+        "index_col": "Index of the column where the key identifier is located (starting from 0)"
+      },
+      "examples": [
+        {
+          "input": "Student Information Registration Form\n| Name | Gender | Age | Education |\n| ---- | ---- | ---- | ---- |\n| Zhang San | Male | 22 | Undergraduate |\n| Li Si | Male | 23 | Undergraduate |\n| Wang Mei | Female | 24 | Master |",
+          "output": {
+            "table_type": "Simple_Table",
+            "header": [
+              0
+            ],
+            "index_col": [
+              0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Other_Table",
+      "definition": "Any tables not belonging to the above two categories.",
+      "required_output": {}
+    }
+  ],
+  "instructions": [
+    "First, determine which category the table belongs to.",
+    "Based on the table type, refer to the 'categories' field definition to collect the necessary output information.",
+    "Ensure all provided information is accurate and correct."
+  ],
+  "input": "$input"
+}
+"""    
 
     def __init__(self, language: Optional[str] = "en", **kwargs):
         super().__init__(language, **kwargs)

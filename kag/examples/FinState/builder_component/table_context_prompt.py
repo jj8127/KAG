@@ -53,7 +53,36 @@ class TableContextKeyWordsExtractPrompt(PromptABC):
 }
 """
 
-    template_en = template_zh
+    template_en = """
+{
+  "task": "Extract Keywords Related to the Table",
+  "instruction": [
+    "Carefully read the entire given text, including the context before and after the table.",
+    "Locate relevant paragraphs: Identify all sentences or paragraphs that directly discuss, explain, or reference the table.",
+    "Select words and phrases that best describe the content, structure, or significance of the table as keywords. Do not include terms that already appear in the header and index columns.",
+    "Table Naming: Assign an easy-to-understand name to the table."
+  ],
+  "output_format": "Output in JSON format, including table_desc, keywords, table_name.",
+  "examples": [
+    {
+      "input": "SMIC Financial Report 2024_3.pdf#7\n2024 Third Quarter Report\nThe board of directors and all directors of the company guarantee that there are no false records, misleading statements, or major omissions in this announcement, and bear legal responsibility for the truthfulness, accuracy, and completeness of its contents.\n2024 Third Quarter Report - II. Key Financial Data\n2024 Third Quarter Report - II. Key Financial Data - (i) Major Accounting Data and Financial Indicators\nUnit: Thousand Currency: RMB\n\n** Target Table **\n### Other Table ###\n### Other Table ###\nNote:\n(1) 'This reporting period' refers to the 3-month period from the beginning to the end of this quarter, the same below.\n(2) According to the latest announcement of the 'Interpretative Announcement No. 1 - Non-recurring Profit and Loss (2023 Revision)' of Information Disclosure of Companies Offering Securities to the Public published on December 22, 2023, the company restated the net profit attributable to shareholders of the listed company excluding non-recurring profit and loss for the same period last year.",
+      "output": {
+        "table_desc": [
+          "SMIC's key financial indicators for the third quarter of 2024, unit: thousand, currency: RMB"
+        ],
+        "keywords": [
+          "SMIC",
+          "2024 Third Quarter Report",
+          "Key Financial Data",
+          "Major Accounting Data and Financial Indicators"
+        ],
+        "table_name": "SMIC 2024 Third Quarter Key Financial Data"
+      }
+    }
+  ],
+  "input": "$input"
+}
+"""
 
     def __init__(self, language: Optional[str] = "en", **kwargs):
         super().__init__(language, **kwargs)

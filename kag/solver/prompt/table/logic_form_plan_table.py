@@ -124,57 +124,118 @@ class LogicFormPlanPrompt(PromptABC):
   "failed_cases": "$history"
 }
 """
-    template_en = """{
-"task": "Decompose into Sub-Questions",
-"instruction": [
-"Identify the core key steps to solve the problem and summarize them as sub-questions.",
-"Refer to function capabilities and assign sub-questions to appropriate functions for processing.",
-"Refer to failed attempts in failed_cases, change the approach, try other decomposition methods, and generate new sub-questions!"
-],
-"pay_attention": [
-"Your mathematical calculation abilities are poor; you must use PythonCoder to solve.",
-"The decomposition of sub-questions must be appropriately detailed, and each sub-question can be solved independently; sub-questions must be core key steps, not extremely detailed execution steps.",
-"Descriptions of sub-questions must be complete, without omitting any keywords, with clear semantics for ease of understanding."
-],
-"output_format": [
-"Just Output in JSON format, without any other description after JSON Data, with 'output' providing the list of sub-questions.",
-"Each sub-question includes 'sub_question' and 'process_function'.",
-"The value of 'sub_question' is a string type. Note: Do not include line breaks to avoid JSON format issues.",
-"The value of 'process_function' should be a 'functionName' from 'functions'."
-],
-"functions": [
+    template_en = """
 {
-  "functionName": "PythonCoder",
-  "description": "Write Python code to solve the given problem.",
-  "pay_attention": "Use only Python's standard libraries.",
-  "examples": [
+  "task": "Decompose Sub-problems",
+  "instruction": [
+    "Identify the core key steps to solve the problem and summarize them into sub-problems.",
+    "Assign sub-problems to appropriate functions for processing based on their capabilities.",
+    "Based on failed_cases of unsuccessful attempts, change your approach and attempt other decomposition methods to generate new sub-problems!"
+  ],
+  "pay_attention": [
+    "Your mathematical calculation ability is very poor and must use PythonCoder to solve.",
+    "Decomposing sub-problems should be appropriate, with each sub-problem being independently solvable; sub-problems must be core key steps, not extremely detailed execution steps.",
+    "The description of sub-problems should be complete, without omitting any keywords, and clear in semantics for understanding."
+  ],
+  "output_format": [
+    "Output in JSON format, the output should provide a list of sub-problems.",
+    "Each sub-problem should include sub_question and process_function."
+  ],
+  "functions": [
     {
-      "input": "Which is larger, 9.8 or 9.11?",
-      "internal_processing_logic": "Write Python code ```python\nanswer = max(9.8, 9.11)\nprint(answer)``` and call the executor to obtain the result.",
-      "output": "9.8"
+      "functionName": "Retrieval",
+      "description": "Contains a knowledge base and returns retrieval results based on given retrieval criteria (natural language).",
+      "pay_attention": [
+        "Retrieval questions must be specific and clear; inappropriate question: look for financial statements. Specific and clear question: search for the net profit value for the entire year of 2024."
+      ],
+      "knowledge_base_content": "kg_content",
+      "examples": [
+        {
+          "knowledge_base_content": "SMIC's Q3 2024 Financial Report",
+          "input": "Recall all sub-items of current assets from the balance sheet information",
+          "output": "omitted"
+        }
+      ]
     },
     {
-      "input": "What day of the week is it today?",
-      "internal_processing_logic": "```python\nimport datetime\n\n# Get the current date\ntoday = datetime.datetime.now()\n\n# Format the date to get the day of the week, %A returns the full weekday name\nday_of_week = today.strftime(\"%A\")\n\n# Print the result\nprint(\"Today is:\", day_of_week)\n```",
-      "output": "The example cannot provide an answer; it depends on the specific execution time."
+      "functionName": "PythonCoder",
+      "description": "Solve the given problem by writing Python code.",
+      "pay_attention": "Use only the Python standard library",
+      "examples": [
+        {
+          "input": "Which is larger, 9.8 or 9.11?",
+          "internal_processing_logic": "Write Python code python\nanswer = max(9.8, 9.11)\nprint(answer), call executor to get the result",
+          "output": "9.8"
+        },
+        {
+          "input": "What day of the week is today?",
+          "internal_processing_logic": "python\nimport datetime\n\n# Get current date\ntoday = datetime.datetime.now()\n\n# Format date as day of the week, %A gives the full weekday name\nday_of_week = today.strftime(\"%A\")\n\n# Print result\nprint(\"Today is:\", day_of_week)\n",
+          "output": "Cannot provide an answer in the example, it depends on the actual run date"
+        }
+      ]
     }
-  ]
-}
-],
-"examples": [
-{
-  "input": "Find two numbers whose product is 1,038,155 and whose sum is 2,508.",
-  "output": [
+  ],
+  "examples": [
     {
-      "sub_question": "Solve the system of equations to find the numbers that satisfy the conditions: 1. The product of the two numbers is X * Y = 1,038,155. 2. The sum of the two numbers is X + Y = 2,508. Use mathematical methods or programming to calculate the specific values of X and Y.",
-      "process_function": "PythonCoder"
+      "input": "If the game revenue grows at the current rate, what will the game revenue be in 2020?",
+      "output": [
+        {
+          "sub_question": "Find the game revenue for 2018 and 2019.",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "Calculate the 2019 game revenue growth rate based on the 2018 and 2019 game revenues; then calculate the 2020 game revenue using the growth rate.",
+          "process_function": "PythonCoder"
+        }
+      ]
+    },
+    {
+      "input": "Find two numbers whose product is 1038155 and whose sum is 2508.",
+      "output": [
+        {
+          "sub_question": "Solve the system of equations to find the numbers that meet the conditions:\n1. The product of the two numbers is X * Y = 1038155\n2. The sum of the two numbers is X + Y = 2508\nUse mathematical methods or programming to compute the specific values of X and Y.",
+          "process_function": "PythonCoder"
+        }
+      ]
+    },
+    {
+      "input": "In Alibaba's financial report, what is the highest sub-item of current assets, and what is its proportion of the current assets?",
+      "output": [
+        {
+          "sub_question": "Recall the total value of current assets from Alibaba's latest balance sheet information.",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "Query details of all current assets from Alibaba's latest balance sheet information.",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "From the retrieved details of Alibaba's current assets, determine which sub-item is the highest and calculate its proportion of the total current assets.",
+          "process_function": "PythonCoder"
+        }
+      ]
+    },
+    {
+      "input": "Who is an executive in company A and simultaneously the chairman of the risk committee, and from which country is this person?",
+      "output": [
+        {
+          "sub_question": "Look up the list of executives in company A.",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "Find the people who are the chair of the risk committee in company A.",
+          "process_function": "Retrieval"
+        },
+        {
+          "sub_question": "Among the answers to the above sub-problems, identify the common person and determine from which country they are.",
+          "process_function": "Retrieval"
+        }
+      ]
     }
-  ]
-}
-],
-"input": "$input",
-"failed_cases": "$history"
-}
+  ],
+  "input": "$input",
+  "failed_cases": "$history"
+}    
 """
 
     def __init__(self, language: str):

@@ -88,7 +88,65 @@ $error
 
 # output
 """
-    template_en = template_zh
+    template_en = """
+# instruction
+Based on the given problem and data, write Python code to solve the problem and output the result. 
+For better understanding, print intermediate results in the Python code. 
+If the problem cannot be solved or an answer cannot be found, print "I don't know" in Python and provide the reason.
+
+# output format
+Only output Python code, do not output anything else. 
+The Python code version is 3.8 and includes the sympy symbolic computation library.
+
+# pay attention
+The context contains answers to upstream sub-problems that you must include when answering the question. 
+The context is only for reference; do not answer other questions in the context. 
+You only need to focus on answering the question provided.
+
+# domain_knowledge
+$dk
+
+# examples
+## example1
+### input
+#### question
+Calculate the interest and the total amount of 47,000 yuan at a rate of 0.015% for a total of 612 days.
+### output
+```python
+# Initial principal
+principal = 47000
+
+# Rate (0.015%)
+rate = 1.5 / 10000
+
+# Number of days
+days = 612
+
+# Calculate annual rate
+annual_rate = rate * 365
+
+# Calculate interest
+interest = principal * (annual_rate / 365) * days
+
+# Output total amount (principal + interest)
+total_amount = principal + interest
+
+print(f"Interest: {interest:.2f}")
+print(f"Total amount: {total_amount:.2f}")
+```
+
+# input
+## question
+$question
+
+## context
+$context
+
+## error
+$error
+
+# output
+"""
 
     def __init__(self, language: str):
         super().__init__(language)

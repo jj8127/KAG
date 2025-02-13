@@ -187,7 +187,183 @@ $input
 
 # your output
 """
-    template_en = template_zh
+    template_en = """
+# Task
+Generate a data query process based on the given question and schema information.
+
+# Instruction
+Select the Table where the data resides based on the data to be queried; multiple Tables are allowed. 
+Start from the Table and locate the TableRow or TableColumn where the data resides. 
+Based on the question, find subitems via the 'subitem' relationship or locate the data in the TableCell. 
+If unable to answer, return: {"answer": "I don't know", "reason": "the reason"}
+
+# output format
+Output in JSON format, containing a list of path queries. Each path includes a description (desc) and the spo triple to be queried. 
+Each spo must include var (variable name), type (entity or relationship type), and link (target entity or relationship name, to chain on graph data).
+
+# Table Schema Information
+```json
+{
+  "entities": [
+    {
+      "name": "Table",
+      "properties": ["name", "desc"],
+      "relationships": [
+        {"p": "containRow"   , "s": "Table", "o": "TableRow"   },
+        {"p": "containColumn", "s": "Table", "o": "TableColumn"}
+      ]
+    },
+    {
+      "name": "TableRow",
+      "properties": ["name", "desc"],
+      "relationships": [
+        {"p": "containCell", "s": "TableRow", "o": "TableCell"},
+        {"p": "partOf"     , "s": "TableRow", "o": "Table"    },
+        {"p": "subitem"    , "s": "TableRow", "o": "TableRow" }
+      ]
+    },
+    {
+      "name": "TableColumn",
+      "properties": ["name", "desc"],
+      "relationships": [
+        {"p": "containCell", "s": "TableColumn", "o": "TableCell"},
+        {"p": "partOf"     , "s": "TableColumn", "o": "Table"    }
+      ]
+    },
+    {
+      "name": "TableCell",
+      "properties": ["name", "value", "scale", "unit"],
+      "relationships": [
+        {"p": "partOfTableRow"   , "s": "TableCell", "o": "TableRow"   },
+        {"p": "partOfTableColumn", "s": "TableCell", "o": "TableColumn"},
+        {"p": "partOfTable"      , "s": "TableCell", "o": "Table"      }
+      ]
+    },
+    {
+      "name": "TableKeyword",
+      "properties": [ {"name": "name", "type": "string"} ],
+      "relationships": [
+        {"p": "keyword", "s": "TableKeyword", "o": "Table"      },
+        {"p": "keyword", "s": "TableKeyword", "o": "TableColumn"}
+      ]
+    }
+  ]
+}
+```
+
+# Examples
+## Querying data from a specific cell in a table
+### input
+Find out what Alibaba's revenue for the six months ending September 30, 2024, is.
+### output
+```json
+[
+  {
+    "desc": "Query the row for revenue through the table",
+    "s": {
+      "var": "s1",
+      "type": "Table",
+      "link": ["Alibaba Revenue Details Table", "Alibaba Performance Summary Table"]
+    },
+    "p": {
+      "var": "p1",
+      "type": "containRow"
+    },
+    "o": {
+      "var": "o1",
+      "type": "TableRow",
+      "link": [
+        "Operating Revenue",
+        "Revenue",
+        "Income"
+      ]
+    }
+  },
+  {
+    "desc": "Through the data in the revenue row, query the cell for the six months ending September 30, 2024",
+    "s": {
+      "var": "o1"
+    },
+    "p": {
+      "var": "p2",
+      "type": "containCell"
+    },
+    "o": {
+      "var": "o2",
+      "type": "TableCell",
+      "link": "Six months ending September 30, 2024"
+    }
+  }
+]
+```
+
+## Query for Composition or Subitems
+### input
+Recall the composition (details, subitems) of Alibaba's operating profit for the six months ending September 30, 2024.
+### output
+```json
+[
+  {
+    "desc": "Query the operating profit row data through the table, and then query its subitems through this row data",
+    "s": {
+      "var": "s1",
+      "type": "Table",
+      "link": ["Alibaba Operating Profit Details Table"]
+    },
+    "p": {
+      "var": "p1",
+      "type": "containRow"
+    },
+    "o": {
+      "var": "o1",
+      "type": "TableRow",
+      "link": [
+        "Operating Profit"
+      ]
+    }
+  },
+  {
+    "desc": "Through the operating profit row data, find its subitems, which are also rows in the table",
+    "s": {
+      "var": "o1"
+    },
+    "p": {
+      "var": "p2",
+      "type": "subitem"
+    },
+    "o": {
+      "var": "o2",
+      "type": "TableRow"
+    }
+  },
+  {
+    "desc": "Through the queried subitems (multiple rows of data), find the TableCell on each row for the six months ending September 30, 2024",
+    "s": {
+      "var": "o2"
+    },
+    "p": {
+      "var": "p3",
+      "type": "containCell"
+    },
+    "o": {
+      "var": "o3",
+      "type": "TableCell",
+      "link": [
+        "Six months ending September 30, 2024"
+      ]
+    }
+  }
+]
+```
+
+# tables we have
+$table_names
+
+# real input
+$input
+
+# your output
+"""
 
     def __init__(self, language: str):
         super().__init__(language)
