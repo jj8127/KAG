@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 import re
@@ -29,16 +30,20 @@ def qa(question, **kwargs):
     )
     return table_reasoner.reason(question, **kwargs)
 
-from kag.examples.TableEval.solver import RUN_ENV
 
 def build_finqa_graph(item):
-    from kag.examples.FinState.builder.graph_db_tools import clear_neo4j_data, clear_neo4j_data_api
+    from kag.examples.FinState.builder.graph_db_tools import (
+        clear_neo4j_data,
+        clear_neo4j_data_api,
+    )
 
     current_working_directory = os.getcwd()
     ckpt_path = os.path.join(current_working_directory, "ckpt")
     if os.path.exists(ckpt_path):
         shutil.rmtree(ckpt_path)
     if RUN_ENV is None:
+        clear_neo4j_data("tableeval")
+    elif 'aliyun' == RUN_ENV:
         clear_neo4j_data("tableeval")
     else:
         clear_neo4j_data_api()
@@ -49,10 +54,11 @@ def build_finqa_graph(item):
     runner.invoke(file_name)
 
 
-
 def load_finqa_data() -> list:
     if RUN_ENV is None:
         finqa_data_path = "/Users/youdonghai/code/rag/FinQA/dataset"
+    elif 'aliyun' == RUN_ENV:
+        finqa_data_path = "/root/code/FinQA/dataset"
     else:
         finqa_data_path = "/ossfs/workspace/FinQA/dataset"
     file_name = "dev.json"
@@ -119,6 +125,7 @@ class MultiHerttEvaluate(Evaluate):
     def is_close_rel(self, a, b, rel_tol=1e-9):
         return abs(a - b) < rel_tol * max(abs(a), abs(b))
 
+
 import kag.examples.FinState.builder_component.table_and_text_extractor
 import kag.examples.FinState.builder_component.table_classify_prompt
 import kag.examples.FinState.builder_component.table_context_prompt
@@ -135,8 +142,11 @@ if __name__ == "__main__":
         "processNum": 0,
     }
     debug_index = None
-    error_question_index_list = []
+    start_index = 10
+    error_question_map = {"error": [], "no_answer": [], "system_error": []}
     for i, _item in enumerate(_data_list):
+        if i < start_index:
+            continue
         if debug_index is not None:
             if i != debug_index:
                 continue
@@ -145,9 +155,11 @@ if __name__ == "__main__":
         try:
             build_finqa_graph(_item)
             _prediction = qa(question=_question)
+            _prediction = str(_prediction)
         except KeyboardInterrupt:
             break
         except:
+            logging.exception("qa error")
             _prediction = str(None)
         print("#" * 100)
         print(
@@ -161,7 +173,12 @@ if __name__ == "__main__":
         metrics = evaObj.getBenchMark([_prediction], [_gold])
 
         if metrics["em"] < 0.9:
-            error_question_index_list.append(i)
+            if "None" == _prediction:
+                error_question_map["system_error"].append(i)
+            elif "i don't know" in _prediction:
+                error_question_map["no_answer"].append(i)
+            else:
+                error_question_map["error"].append(i)
 
         total_metrics["em"] += metrics["em"]
         total_metrics["f1"] += metrics["f1"]
@@ -169,7 +186,7 @@ if __name__ == "__main__":
         total_metrics["processNum"] += 1
 
         print(total_metrics)
-        print("error index list=" + str(error_question_index_list))
+        print("error index list=" + str(error_question_map))
         print("#" * 100)
         if debug_index is not None:
             break

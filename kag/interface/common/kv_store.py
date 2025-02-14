@@ -27,6 +27,8 @@ class KVStore:
             from kag.examples.TableEval.solver import RUN_ENV
             if RUN_ENV is None:
                 db_name = "/tmp/llm_cache"
+            elif 'aliyun' == RUN_ENV:
+                db_name = "/tmp/llm_cache"
             else:
                 db_name = "/ossfs/workspace/llm_cache"
         if not have_sql_lite:
