@@ -58,7 +58,7 @@ def load_finqa_data() -> list:
     if RUN_ENV is None:
         finqa_data_path = "/Users/youdonghai/code/rag/FinQA/dataset"
     elif 'aliyun' == RUN_ENV:
-        finqa_data_path = "/root/code/FinQA/dataset"
+        finqa_data_path = "/home/zhenzhi/code/FinQA/dataset"
     else:
         finqa_data_path = "/ossfs/workspace/FinQA/dataset"
     file_name = "dev.json"
@@ -141,8 +141,8 @@ if __name__ == "__main__":
         "answer_similarity": 0.0,
         "processNum": 0,
     }
-    debug_index = None
-    start_index = 10
+    debug_index = 85
+    start_index = 0
     error_question_map = {"error": [], "no_answer": [], "system_error": []}
     for i, _item in enumerate(_data_list):
         if i < start_index:
@@ -175,7 +175,7 @@ if __name__ == "__main__":
         if metrics["em"] < 0.9:
             if "None" == _prediction:
                 error_question_map["system_error"].append(i)
-            elif "i don't know" in _prediction:
+            elif "i don't know" in _prediction.lower():
                 error_question_map["no_answer"].append(i)
             else:
                 error_question_map["error"].append(i)
@@ -190,5 +190,5 @@ if __name__ == "__main__":
         print("#" * 100)
         if debug_index is not None:
             break
-        if i >= 49:
+        if i >= 200:
             break

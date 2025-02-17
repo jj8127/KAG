@@ -261,7 +261,7 @@ class TableAndTextExtractor(ExtractorABC):
             table_info = {}
 
         if not table_info:
-            return rst
+            table_info = {}
         if "header" in table_info and "index_col" in table_info:
             header = table_info["header"]
             index_col = table_info["index_col"]

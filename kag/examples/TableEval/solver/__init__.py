@@ -1,1 +1,1 @@
-RUN_ENV = None
+RUN_ENV = 'aliyun'

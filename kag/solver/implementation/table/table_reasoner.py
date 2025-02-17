@@ -106,6 +106,8 @@ class TableReasoner(KagReasonerABC):
             print("subquestion_list=" + str(sub_question_list))
 
             for sub_question in sub_question_list:
+                if isinstance(sub_question, str):
+                    print("error, subquestion is str, " + sub_question)
                 sub_q_str = sub_question["sub_question"]
                 # new_sub_q_str = self._rewrite_sub_question(history=history, subquestion=sub_q_str)
                 # print(f"rewrite_sub_question, from={sub_q_str}, to={new_sub_q_str}")

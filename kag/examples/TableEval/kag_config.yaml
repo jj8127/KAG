@@ -25,7 +25,7 @@ log:
 project:
   biz_scene: table
   host_addr: http://127.0.0.1:8887
-  id: '2'
+  id: '1'
   #host_addr: http://antspg-gz00b-006000164057.sa128-sqa.alipay.net:8887
   #id: '3500002'
   language: en
@@ -67,7 +67,7 @@ finqa_builder_pipeline:
       vectorize_model: *vectorize_model
     writer:
       type: kg_writer # kag.builder.component.writer.kg_writer.KGWriter
-  num_threads_per_chain: 1
+  num_threads_per_chain: 10
   num_chains: 1
   scanner:
     type: file_scanner # kag.builder.component.scanner.dataset_scanner.HotpotqaCorpusScanner
