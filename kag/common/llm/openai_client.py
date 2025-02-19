@@ -56,7 +56,7 @@ class OpenAIClient(LLMClient):
             temperature (float, optional): The temperature parameter for the model. Defaults to 0.7.
             timeout (float): The timeout duration for the service request. Defaults to None, means no timeout.
         """
-
+        super().__init__()
         self.api_key = api_key
         self.base_url = base_url
         self.model = model
