@@ -2,6 +2,8 @@ import re
 import logging
 from typing import List
 
+from tenacity import retry, stop_after_attempt
+
 from kag.common.conf import KAG_PROJECT_CONF
 from kag.interface import LLMClient, VectorizeModelABC
 from kag.interface import PromptABC
@@ -80,7 +82,15 @@ class DefaultLFPlanner(LFPlannerABC):
                 query_lf_map[n.sub_query] = [n]
         plan_result = []
         for k, v in query_lf_map.items():
-            plan_result.append(LFPlan(query=k, lf_nodes=v))
+            lf_type = "retrieval"
+            for n in v:
+                if n.operator == "deduce":
+                    lf_type = "deduce"
+                    break
+                if n.operator == "math":
+                    lf_type = "math"
+                    break
+            plan_result.append(LFPlan(query=k, lf_nodes=v, sub_query_type=lf_type))
         return plan_result
 
     def _process_output_query(self, question, sub_query: str):
@@ -100,6 +110,7 @@ class DefaultLFPlanner(LFPlannerABC):
         )
         return self._split_sub_query(parsed_logic_nodes)
 
+    @retry(stop=stop_after_attempt(3))
     def generate_logic_form(self, question: str):
         return self.llm_module.invoke(
             {"question": question},

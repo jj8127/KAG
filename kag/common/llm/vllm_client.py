@@ -15,7 +15,6 @@ import json
 import logging
 import requests
 from kag.interface import LLMClient
-from tenacity import retry, stop_after_attempt
 
 
 # logging.basicConfig(level=logging.DEBUG)
@@ -30,12 +29,10 @@ class VLLMClient(LLMClient):
     This class provides methods to make synchronous requests to the VLLM server, handle model calls, and parse responses.
     """
 
-    def __init__(
-        self,
-        model: str,
-        base_url: str,
-        timeout: float = None,
-    ):
+    def __init__(self, model: str,
+                 base_url: str,
+                 timeout: float = None,
+                 **kwargs):
         """
         Initializes the VLLMClient instance.
 
@@ -44,6 +41,7 @@ class VLLMClient(LLMClient):
             base_url (str): The base URL for the VLLM API.
             timeout (float): The timeout duration for the service request. Defaults to None, means no timeout.
         """
+        super().__init__(**kwargs)
         self.model = model
         self.base_url = base_url
         self.timeout = timeout
@@ -89,29 +87,3 @@ class VLLMClient(LLMClient):
 
         content = [{"role": "user", "content": prompt}]
         return self.sync_request(content)
-
-    @retry(stop=stop_after_attempt(3))
-    def call_with_json_parse(self, prompt):
-        """
-        Calls the model and attempts to parse the response into JSON format.
-
-        Parameters:
-            prompt (str): The prompt provided to the model.
-
-        Returns:
-            Union[dict, str]: If the response is valid JSON, returns the parsed dictionary; otherwise, returns the original response.
-        """
-
-        content = [{"role": "user", "content": prompt}]
-        rsp = self.sync_request(content)
-        _end = rsp.rfind("```")
-        _start = rsp.find("```json")
-        if _end != -1 and _start != -1:
-            json_str = rsp[_start + len("```json") : _end].strip()
-        else:
-            json_str = rsp
-        try:
-            json_result = json.loads(json_str)
-        except:
-            return rsp
-        return json_result
