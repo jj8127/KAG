@@ -39,7 +39,7 @@
 
 ### **HotpotQA** 평가 결과  
 **HotpotQA** 데이터셋 평가에서는 **AutoRAG**가 **EM** 지표에서 우세했으며, **KAG**는 **Relaxed EM**, **Answer Similarity**에서 강점을 보였습니다.  
-![그림5](https://github.com/user-attachments/assets/686842d4-2483-4a20-b21b-178546ed85c)  
+![그림5](https://github.com/user-attachments/assets/c2851edc-e162-4cc5-be6b-2944dbd26ec8)
 ![그림6](https://github.com/user-attachments/assets/9e73efc8-eccc-4fd9-bc91-b7e07980d3d7)  
 
 ## 최종 결과 및 시사점  
