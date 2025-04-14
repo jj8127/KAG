@@ -39,7 +39,7 @@ Evaluation on the **2WikiMultiHopQA** dataset indicated that **AutoRAG** achieve
 
 ### **HotpotQA** Evaluation Results  
 Evaluation on the **HotpotQA** dataset demonstrated that **AutoRAG** outperformed on the **EM** metric, whereas **KAG** showed strong performance in **Relaxed EM** and **Answer Similarity**.  
-![Figure5](https://github.com/user-attachments/assets/686842d4-2483-4a20-b21b-178546ed85c)  
+ ![그림5](https://github.com/user-attachments/assets/e591b4f5-3cb8-4708-844c-c812baae443f)
 ![Figure6](https://github.com/user-attachments/assets/9e73efc8-eccc-4fd9-bc91-b7e07980d3d7)
 
 ## Final Results and Implications  
